@@ -8,7 +8,7 @@ interface Props {
 
 export default function RouteNodeList({ nodes, selectedNodeId, onSelect }: Props) {
   return (
-    <aside className="absolute left-6 top-6 bottom-6 z-10 w-[300px] overflow-hidden rounded-2xl bg-white shadow-xl border border-forest-100">
+    <aside className="absolute left-6 top-20 bottom-6 z-10 w-[300px] overflow-hidden rounded-2xl bg-white shadow-xl border border-forest-100">
       <div className="px-5 pt-5 pb-3 border-b border-forest-100">
         <h2 className="text-xl font-bold text-forest-800">乌孙古道</h2>
         <p className="mt-1 text-xs text-forest-500">琼库什台方向起点 → 黑英山方向出口</p>

@@ -40,6 +40,7 @@ export default function RouteMobileSheet({
         className="cursor-grab py-3 touch-none"
         onPointerDown={(event) => { dragStartY.current = event.clientY; event.currentTarget.setPointerCapture(event.pointerId); }}
         onPointerUp={handlePointerUp}
+        onPointerCancel={() => { dragStartY.current = undefined; }}
       >
         <div className="mx-auto h-1.5 w-12 rounded-full bg-forest-100" />
       </div>

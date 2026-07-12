@@ -7,7 +7,7 @@ interface Props {
 
 export default function RouteDetailPanel({ route, node }: Props) {
   return (
-    <aside className="absolute left-[340px] top-6 bottom-6 z-10 w-[330px] overflow-hidden rounded-2xl bg-white shadow-xl border border-forest-100">
+    <aside className="absolute left-[340px] top-20 bottom-6 z-10 w-[330px] overflow-hidden rounded-2xl bg-white shadow-xl border border-forest-100">
       <img
         src={node?.image || route.heroImage}
         alt={node?.name || route.name}

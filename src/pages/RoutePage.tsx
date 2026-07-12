@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRouteBySlug } from '../data/routes';
 import Hero from '../components/Hero';
@@ -9,8 +10,9 @@ import Footer from '../components/Footer';
 import GearAdvisor from '../components/GearAdvisor';
 import FavoriteButton from '../components/FavoriteButton';
 import { useAuth } from '../contexts/AuthContext';
-import RouteMapExperience from '../components/RouteMapExperience';
 import { getRouteMapConfig } from '../data/routeMapData';
+
+const RouteMapExperience = lazy(() => import('../components/RouteMapExperience'));
 
 export default function RoutePage() {
   const { routeSlug } = useParams<{ routeSlug: string }>();
@@ -37,7 +39,11 @@ export default function RoutePage() {
 
   return (
     <div className="min-h-screen">
-      {mapConfig ? <RouteMapExperience route={route} config={mapConfig} /> : <Hero route={route} />}
+      {mapConfig ? (
+        <Suspense fallback={<div className="route-map-shell flex items-center justify-center bg-forest-50 text-sm text-forest-600">正在加载路线地图...</div>}>
+          <RouteMapExperience route={route} config={mapConfig} />
+        </Suspense>
+      ) : <Hero route={route} />}
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between border-b border-forest-100">
         <span className="text-sm text-forest-400">
           {route.overview.distance} &middot; {route.overview.duration} &middot; {route.overview.maxElevation}

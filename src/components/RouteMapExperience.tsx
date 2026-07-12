@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { SheetLevel } from '../lib/routeMapState';
+import { selectRouteNode, type SheetLevel } from '../lib/routeMapState';
 import type { RouteData, RouteMapConfig } from '../types';
 import RouteDetailPanel from './RouteDetailPanel';
 import RouteMapCanvas from './RouteMapCanvas';
@@ -15,8 +15,13 @@ export default function RouteMapExperience({ route, config }: Props) {
   const [selectedNodeId, setSelectedNodeId] = useState<string>();
   const [sheetLevel, setSheetLevel] = useState<SheetLevel>('summary');
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [fitRequestKey, setFitRequestKey] = useState(0);
   const selectedNode = config.nodes.find((node) => node.id === selectedNodeId);
-  const selectNode = useCallback((nodeId: string) => setSelectedNodeId(nodeId), []);
+  const selectNode = useCallback((nodeId: string) => {
+    const nextState = selectRouteNode(nodeId);
+    setSelectedNodeId(nextState.selectedNodeId);
+    setSheetLevel(nextState.sheetLevel);
+  }, []);
   const reportError = useCallback((message: string) => setErrorMessage(message), []);
 
   return (
@@ -24,9 +29,18 @@ export default function RouteMapExperience({ route, config }: Props) {
       <RouteMapCanvas
         config={config}
         selectedNodeId={selectedNodeId}
+        fitRequestKey={fitRequestKey}
         onSelectNode={selectNode}
         onError={reportError}
       />
+
+      <button
+        type="button"
+        onClick={() => setFitRequestKey((value) => value + 1)}
+        className="absolute right-3 top-52 z-10 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-forest-700 shadow-lg border border-forest-100"
+      >
+        适应路线
+      </button>
 
       <div className="hidden lg:block">
         <RouteNodeList nodes={config.nodes} selectedNodeId={selectedNodeId} onSelect={selectNode} />

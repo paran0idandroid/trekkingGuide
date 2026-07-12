@@ -33,10 +33,30 @@ html {
   font-size: 10px;
 }
 
+.route-map-shell .maplibregl-ctrl-top-right {
+  top: 68px;
+}
+
+.route-map-shell .maplibregl-ctrl-bottom-right {
+  transition: bottom 240ms ease;
+}
+
 @media (max-width: 1023px) {
   .route-map-shell {
     height: calc(100svh - 56px);
     min-height: 560px;
+  }
+
+  .route-map-shell:has(.route-map-sheet[data-level='summary']) .maplibregl-ctrl-bottom-right {
+    bottom: 218px;
+  }
+
+  .route-map-shell:has(.route-map-sheet[data-level='nodes']) .maplibregl-ctrl-bottom-right {
+    bottom: calc(52vh + 8px);
+  }
+
+  .route-map-shell:has(.route-map-sheet[data-level='detail']) .maplibregl-ctrl-bottom-right {
+    bottom: calc(78vh + 8px);
   }
 }
 

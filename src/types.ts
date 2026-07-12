@@ -50,6 +50,11 @@ export interface RouteMapConfig {
   geoJsonUrl: string;
   styleUrl: string;
   center: [number, number];
+  colors: {
+    track: string;
+    outline: string;
+    node: string;
+  };
   nodes: RouteMapNode[];
 }
 

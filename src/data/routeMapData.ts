@@ -6,6 +6,8 @@ const routeMapConfigMap: Record<string, RouteMapConfig> = {
     geoJsonUrl: '/routes/wusun.geojson',
     styleUrl: 'https://tiles.openfreemap.org/styles/liberty',
     center: [82.35, 42.62],
+    // MapLibre paint API requires concrete color strings; values mirror forest-500 and white.
+    colors: { track: '#1a4d3e', outline: '#ffffff', node: '#1a4d3e' },
     nodes: [
       { id: 'start', name: '琼库什台方向起点', category: '起点', description: '乌孙古道北端徒步起点。', image: '/pics/14.webp', coordinates: [82.198760, 42.915280, 2023] },
       { id: 'north-camp', name: '北段商业营地', category: '营地', description: '轨迹记录中的北段补给与扎营位置。', image: '/pics/12.webp', coordinates: [82.270730, 42.824154, 2706] },
