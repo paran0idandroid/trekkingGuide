@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import maplibregl, { LngLatBounds, Map } from 'maplibre-gl';
 import type { FeatureCollection, LineString, Point } from 'geojson';
 import type { RouteMapConfig } from '../types';
+import { getRouteDashArray } from '../lib/routeMapState';
 
 interface Props {
   config: RouteMapConfig;
@@ -20,8 +21,13 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
     if (!containerRef.current) return;
 
     const abortController = new AbortController();
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let animationFrame: number | undefined;
+    let animationStart = 0;
+    let lastAnimationStep = -1;
     let map: Map;
     try {
+      if (!config.styleUrl) throw new Error('缺少 MapTiler API Key');
       map = new maplibregl.Map({
         container: containerRef.current,
         style: config.styleUrl,
@@ -29,8 +35,8 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
         zoom: 9,
         attributionControl: { compact: false },
       });
-    } catch (error) {
-      onError(`地图初始化失败：${error instanceof Error ? error.message : '未知错误'}`);
+    } catch {
+      onError('地图初始化失败，请检查 MapTiler Key 和浏览器兼容性');
       return;
     }
 
@@ -38,11 +44,35 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     map.addControl(new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: false }), 'top-right');
     let reportedMapError = false;
-    map.on('error', (event) => {
+    map.on('error', () => {
       if (reportedMapError) return;
       reportedMapError = true;
-      onError(`地图底图加载失败：${event.error?.message || '未知错误'}`);
+      onError('地图底图加载失败，请检查 MapTiler Key 和网络连接');
     });
+
+    const animateTrack = (timestamp: number) => {
+      if (!animationStart) animationStart = timestamp;
+      const step = Math.floor((timestamp - animationStart) / 120);
+      if (step !== lastAnimationStep && map.getLayer('wusun-track-motion')) {
+        lastAnimationStep = step;
+        map.setPaintProperty('wusun-track-motion', 'line-dasharray', getRouteDashArray(step));
+      }
+      animationFrame = requestAnimationFrame(animateTrack);
+    };
+
+    const syncTrackAnimation = () => {
+      if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
+      animationFrame = undefined;
+      animationStart = 0;
+      lastAnimationStep = -1;
+      if (!map.getLayer('wusun-track-motion')) return;
+      map.setPaintProperty('wusun-track-motion', 'line-opacity', reducedMotion.matches ? 0.65 : 0.9);
+      if (reducedMotion.matches) {
+        map.setPaintProperty('wusun-track-motion', 'line-dasharray', getRouteDashArray(0));
+      } else if (!document.hidden) {
+        animationFrame = requestAnimationFrame(animateTrack);
+      }
+    };
 
     map.on('load', async () => {
       try {
@@ -66,6 +96,18 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
           paint: { 'line-color': config.colors.track, 'line-width': 4 },
         });
         map.addLayer({
+          id: 'wusun-track-motion',
+          type: 'line',
+          source: 'wusun',
+          filter: ['==', ['geometry-type'], 'LineString'],
+          paint: {
+            'line-color': config.colors.outline,
+            'line-width': 2,
+            'line-opacity': reducedMotion.matches ? 0.65 : 0.9,
+            'line-dasharray': getRouteDashArray(0),
+          },
+        });
+        map.addLayer({
           id: 'wusun-nodes',
           type: 'circle',
           source: 'wusun',
@@ -86,6 +128,8 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
         );
         boundsRef.current = bounds;
         map.fitBounds(bounds, { padding: 72, duration: 0 });
+
+        syncTrackAnimation();
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
         onError(`路线轨迹暂时无法加载：${error instanceof Error ? error.message : '未知错误'}`);
@@ -99,8 +143,14 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
     map.on('mouseenter', 'wusun-nodes', () => { map.getCanvas().style.cursor = 'pointer'; });
     map.on('mouseleave', 'wusun-nodes', () => { map.getCanvas().style.cursor = ''; });
 
+    document.addEventListener('visibilitychange', syncTrackAnimation);
+    reducedMotion.addEventListener('change', syncTrackAnimation);
+
     return () => {
       abortController.abort();
+      if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
+      document.removeEventListener('visibilitychange', syncTrackAnimation);
+      reducedMotion.removeEventListener('change', syncTrackAnimation);
       map.remove();
       mapRef.current = undefined;
       boundsRef.current = undefined;

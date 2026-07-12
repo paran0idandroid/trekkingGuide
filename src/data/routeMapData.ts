@@ -1,10 +1,14 @@
 import type { RouteMapConfig } from '../types';
+import { createMapTilerOutdoorStyleUrl } from '../lib/routeMapState';
+
+const mapTilerApiKey = (import.meta.env.VITE_MAPTILER_API_KEY || '').trim();
+const mapTilerOutdoorStyleUrl = mapTilerApiKey ? createMapTilerOutdoorStyleUrl(mapTilerApiKey) : '';
 
 const routeMapConfigMap: Record<string, RouteMapConfig> = {
   wusun: {
     routeSlug: 'wusun',
     geoJsonUrl: '/routes/wusun.geojson',
-    styleUrl: 'https://tiles.openfreemap.org/styles/liberty',
+    styleUrl: mapTilerOutdoorStyleUrl,
     center: [82.35, 42.62],
     // MapLibre paint API requires concrete color strings; values mirror forest-500 and white.
     colors: { track: '#1a4d3e', outline: '#ffffff', node: '#1a4d3e' },
