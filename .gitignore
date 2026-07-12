@@ -1,0 +1,12 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# Local OS and tool state
+.DS_Store
+.agents/
+.codex/
+.gstack/
+
+# Local Netlify folder
+.netlify/
