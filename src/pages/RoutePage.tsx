@@ -9,12 +9,15 @@ import Footer from '../components/Footer';
 import GearAdvisor from '../components/GearAdvisor';
 import FavoriteButton from '../components/FavoriteButton';
 import { useAuth } from '../contexts/AuthContext';
+import RouteMapExperience from '../components/RouteMapExperience';
+import { getRouteMapConfig } from '../data/routeMapData';
 
 export default function RoutePage() {
   const { routeSlug } = useParams<{ routeSlug: string }>();
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const route = routeSlug ? getRouteBySlug(routeSlug) : undefined;
+  const mapConfig = route ? getRouteMapConfig(route.slug) : undefined;
 
   if (!route) {
     return (
@@ -34,7 +37,7 @@ export default function RoutePage() {
 
   return (
     <div className="min-h-screen">
-      <Hero route={route} />
+      {mapConfig ? <RouteMapExperience route={route} config={mapConfig} /> : <Hero route={route} />}
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between border-b border-forest-100">
         <span className="text-sm text-forest-400">
           {route.overview.distance} &middot; {route.overview.duration} &middot; {route.overview.maxElevation}

@@ -1,9 +1,43 @@
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html {
   scroll-behavior: smooth;
+}
+
+.route-map-shell {
+  height: min(820px, calc(100vh - 64px));
+  min-height: 620px;
+}
+
+.route-map-sheet {
+  transition: height 240ms ease;
+}
+
+.route-map-sheet[data-level='summary'] {
+  height: 210px;
+}
+
+.route-map-sheet[data-level='nodes'] {
+  height: 52vh;
+}
+
+.route-map-sheet[data-level='detail'] {
+  height: 78vh;
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+}
+
+@media (max-width: 1023px) {
+  .route-map-shell {
+    height: calc(100svh - 56px);
+    min-height: 560px;
+  }
 }
 
 @media (max-width: 768px) {

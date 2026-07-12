@@ -34,6 +34,25 @@ export interface RouteData {
   gearProfileKey?: string;
 }
 
+export type RouteMapNodeCategory = '起点' | '终点' | '营地' | '垭口' | '河流' | '景点';
+
+export interface RouteMapNode {
+  id: string;
+  name: string;
+  category: RouteMapNodeCategory;
+  description: string;
+  image: string;
+  coordinates: [number, number, number];
+}
+
+export interface RouteMapConfig {
+  routeSlug: string;
+  geoJsonUrl: string;
+  styleUrl: string;
+  center: [number, number];
+  nodes: RouteMapNode[];
+}
+
 // ============================================================
 // Gear Recommendation Types
 // ============================================================
