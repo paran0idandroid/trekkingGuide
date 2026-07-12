@@ -37,7 +37,7 @@ export default function RouteMapExperience({ route, config }: Props) {
       <button
         type="button"
         onClick={() => setFitRequestKey((value) => value + 1)}
-        className="absolute right-3 top-52 z-10 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-forest-700 shadow-lg border border-forest-100"
+        className="absolute right-3 top-52 z-10 hidden rounded-xl bg-white px-3 py-2 text-xs font-semibold text-forest-700 shadow-lg border border-forest-100 lg:block"
       >
         适应路线
       </button>
@@ -54,6 +54,7 @@ export default function RouteMapExperience({ route, config }: Props) {
         level={sheetLevel}
         onLevelChange={setSheetLevel}
         onSelectNode={selectNode}
+        onFitRoute={() => setFitRequestKey((value) => value + 1)}
       />
 
       {errorMessage && (

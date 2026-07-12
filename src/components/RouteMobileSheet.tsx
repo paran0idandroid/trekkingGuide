@@ -9,6 +9,7 @@ interface Props {
   level: SheetLevel;
   onLevelChange: (level: SheetLevel) => void;
   onSelectNode: (nodeId: string) => void;
+  onFitRoute: () => void;
 }
 
 export default function RouteMobileSheet({
@@ -18,6 +19,7 @@ export default function RouteMobileSheet({
   level,
   onLevelChange,
   onSelectNode,
+  onFitRoute,
 }: Props) {
   const dragStartY = useRef<number>();
 
@@ -53,17 +55,18 @@ export default function RouteMobileSheet({
             <div className="mt-4 flex gap-5 text-sm text-forest-700">
               <span>106.9 km</span><span>6 天</span><span>↑ 6458 m</span>
             </div>
-            <button type="button" onClick={() => onLevelChange('nodes')} className="mt-4 w-full rounded-xl bg-forest-500 px-4 py-3 text-sm font-semibold text-white">
-              浏览路线节点
-            </button>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button type="button" onClick={onFitRoute} className="rounded-xl bg-sand-100 px-4 py-3 text-sm font-semibold text-sand-800">适应路线</button>
+              <button type="button" onClick={() => onLevelChange('nodes')} className="rounded-xl bg-forest-500 px-4 py-3 text-sm font-semibold text-white">浏览路线节点</button>
+            </div>
           </>
         )}
 
         {level === 'nodes' && (
           <>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-bold text-forest-800">路线节点</h2>
-              <span className="text-xs text-forest-500">{nodes.length} 个</span>
+              <button type="button" onClick={onFitRoute} className="rounded-lg bg-sand-100 px-2.5 py-1.5 text-xs font-semibold text-sand-800">适应路线</button>
             </div>
             <div className="mt-3 space-y-2">
               {nodes.map((node) => (
@@ -86,9 +89,10 @@ export default function RouteMobileSheet({
             <h2 className="mt-3 text-xl font-bold text-forest-800">{selectedNode.name}</h2>
             <p className="mt-2 text-sm leading-relaxed text-forest-600">{selectedNode.description}</p>
             <p className="mt-3 text-sm font-medium text-forest-700">海拔 {Math.round(selectedNode.coordinates[2])} m</p>
-            <button type="button" onClick={() => onLevelChange('nodes')} className="mt-4 w-full rounded-xl bg-forest-500 px-4 py-3 text-sm font-semibold text-white">
-              返回节点列表
-            </button>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button type="button" onClick={onFitRoute} className="rounded-xl bg-sand-100 px-4 py-3 text-sm font-semibold text-sand-800">适应路线</button>
+              <button type="button" onClick={() => onLevelChange('nodes')} className="rounded-xl bg-forest-500 px-4 py-3 text-sm font-semibold text-white">返回节点列表</button>
+            </div>
           </>
         )}
       </div>
