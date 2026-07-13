@@ -2,7 +2,13 @@ import { useEffect, useRef } from 'react';
 import maplibregl, { LngLatBounds, Map } from 'maplibre-gl';
 import type { FeatureCollection, LineString, Point } from 'geojson';
 import type { RouteMapConfig } from '../types';
-import { getRouteDashArray } from '../lib/routeMapState';
+import {
+  getRouteDashArray,
+  getRouteNodeFocusOffset,
+  getRouteNodeLabelRules,
+  getRouteNodeSelectionFilter,
+  routeNodeSelectionStyle,
+} from '../lib/routeMapState';
 
 interface Props {
   config: RouteMapConfig;
@@ -16,12 +22,15 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map>();
   const boundsRef = useRef<LngLatBounds>();
+  const selectedNodeIdRef = useRef(selectedNodeId);
+  selectedNodeIdRef.current = selectedNodeId;
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const abortController = new AbortController();
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const labelRules = getRouteNodeLabelRules(window.innerWidth < 1024);
     let animationFrame: number | undefined;
     let animationStart = 0;
     let lastAnimationStep = -1;
@@ -74,6 +83,20 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
       }
     };
 
+    const syncNodeLabels = () => {
+      const isMobile = window.innerWidth < 1024;
+      getRouteNodeLabelRules(isMobile).forEach(({ id, minZoom }) => {
+        if (!map.getLayer(id)) return;
+        map.setLayerZoomRange(id, minZoom, 24);
+        map.setLayoutProperty(id, 'text-size', isMobile ? 12 : 13);
+      });
+    };
+
+    const highlightSelectedNode = (nodeId: string) => {
+      if (!map.getLayer('wusun-node-selection')) return;
+      map.setFilter('wusun-node-selection', getRouteNodeSelectionFilter(nodeId));
+    };
+
     map.on('load', async () => {
       try {
         const response = await fetch(config.geoJsonUrl, { signal: abortController.signal });
@@ -108,6 +131,17 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
           },
         });
         map.addLayer({
+          id: 'wusun-node-selection',
+          type: 'circle',
+          source: 'wusun',
+          filter: getRouteNodeSelectionFilter(selectedNodeIdRef.current ?? ''),
+          paint: {
+            'circle-radius': routeNodeSelectionStyle.ringRadius,
+            'circle-color': config.colors.node,
+            'circle-blur': routeNodeSelectionStyle.ringBlur,
+          },
+        });
+        map.addLayer({
           id: 'wusun-nodes',
           type: 'circle',
           source: 'wusun',
@@ -119,6 +153,36 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
             'circle-stroke-width': 3,
           },
         });
+        labelRules.forEach((rule) => {
+          map.addLayer({
+            id: rule.id,
+            type: 'symbol',
+            source: 'wusun',
+            minzoom: rule.minZoom,
+            filter: [
+              'all',
+              ['==', ['geometry-type'], 'Point'],
+              ['in', ['get', 'category'], ['literal', rule.categories]],
+            ],
+            layout: {
+              'text-field': ['get', 'name'],
+              'text-size': window.innerWidth < 1024 ? 12 : 13,
+              'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+              'text-radial-offset': 0.9,
+              'text-max-width': 9,
+              'text-padding': 4,
+              'text-allow-overlap': true,
+              'text-ignore-placement': false,
+            },
+            paint: {
+              'text-color': config.colors.node,
+              'text-halo-color': config.colors.outline,
+              'text-halo-width': routeNodeSelectionStyle.labelHaloWidth,
+              'text-halo-blur': 0.5,
+            },
+          });
+        });
+        if (selectedNodeIdRef.current) highlightSelectedNode(selectedNodeIdRef.current);
 
         const track = geoJson.features.find((feature) => feature.geometry.type === 'LineString');
         if (!track || track.geometry.type !== 'LineString') throw new Error('缺少连续轨迹');
@@ -136,21 +200,25 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
       }
     });
 
-    map.on('click', 'wusun-nodes', (event) => {
-      const id = event.features?.[0]?.properties?.id;
-      if (typeof id === 'string') onSelectNode(id);
+    ['wusun-nodes', ...labelRules.map((rule) => rule.id)].forEach((layerId) => {
+      map.on('click', layerId, (event) => {
+        const id = event.features?.[0]?.properties?.id;
+        if (typeof id === 'string') onSelectNode(id);
+      });
+      map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
     });
-    map.on('mouseenter', 'wusun-nodes', () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', 'wusun-nodes', () => { map.getCanvas().style.cursor = ''; });
 
     document.addEventListener('visibilitychange', syncTrackAnimation);
     reducedMotion.addEventListener('change', syncTrackAnimation);
+    window.addEventListener('resize', syncNodeLabels);
 
     return () => {
       abortController.abort();
       if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
       document.removeEventListener('visibilitychange', syncTrackAnimation);
       reducedMotion.removeEventListener('change', syncTrackAnimation);
+      window.removeEventListener('resize', syncNodeLabels);
       map.remove();
       mapRef.current = undefined;
       boundsRef.current = undefined;
@@ -161,9 +229,15 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
     if (!selectedNodeId) return;
     const node = config.nodes.find((candidate) => candidate.id === selectedNodeId);
     if (!node) throw new Error(`不存在的地图节点：${selectedNodeId}`);
+    const map = mapRef.current;
+    if (map?.getLayer('wusun-node-selection')) {
+      map.setFilter('wusun-node-selection', getRouteNodeSelectionFilter(selectedNodeId));
+    }
+    const container = map?.getContainer();
     mapRef.current?.easeTo({
       center: [node.coordinates[0], node.coordinates[1]],
       zoom: 12,
+      offset: container ? getRouteNodeFocusOffset(container.clientWidth, container.clientHeight) : [0, 0],
       duration: 600,
     });
   }, [config.nodes, selectedNodeId]);

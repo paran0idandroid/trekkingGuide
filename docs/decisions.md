@@ -99,6 +99,53 @@ UI 文案、URL 路径、注释使用中文。TypeScript 标识符（类型、�
 
 ---
 
+### ADR-008: 乌孙古道使用 MapLibre + MapTiler Outdoor
+
+**2026-07-12**
+
+乌孙古道交互地图使用 MapLibre GL JS 渲染本地 GeoJSON 轨迹与节点，底图使用 MapTiler Outdoor。API Key 仅通过 `VITE_MAPTILER_API_KEY` 注入，不写入源码或 Git。
+
+**理由**：
+- 支持矢量地形、等高线、山体阴影和专业路线交互
+- MapLibre 维护活跃且许可证适合项目使用
+- 本地 GeoJSON 可移除 KML 中的用户和设备元数据
+
+**影响**：MapTiler 是外部运行时服务；生产部署前必须配置带 HTTP Origin 限制的独立 Key。
+
+---
+
+### ADR-009: Satoshi + Nohemi + Noto Sans SC 字体体系
+
+**2026-07-13**
+
+正文、导航和按钮使用 Satoshi；h1–h3 使用 Nohemi；中文统一回退到 Noto Sans SC。Satoshi 从 Fontshare 官方 Web Font 加载，Nohemi WOFF2 随项目发布并保留许可文件。
+
+**理由**：
+- 建立更接近 Komoot 的户外产品字体层级
+- 保持中文跨平台可读性
+- Nohemi 本地托管避免标题字体受第三方网络影响
+
+**影响**：Satoshi 仍依赖 Fontshare CDN；字体来源和许可见 `third-party-licenses/README.md`。
+
+---
+
+### ADR-010: 路线节点名称与选中聚焦规则
+
+**2026-07-13**
+
+节点名称直接由 MapLibre Symbol 图层绘制。桌面显示全部节点名；移动端首屏显示起点、终点、营地和垭口，河流与景点在 zoom 11 后显示。选中态使用深绿双环并保持标签原有深绿文字与白色细描边。
+
+节点聚焦以可见地图区域为中心：桌面向右偏移 335px，避开左侧 670px 双卡片；移动端向上偏移地图高度的 39%，避开 78vh 详情面板。
+
+**理由**：
+- 节点无需打开列表即可识别
+- 避免粗描边形成突兀的矩形色块
+- 列表点击后节点不会被桌面卡片或移动端详情面板遮挡
+
+**影响**：卡片宽度、响应式断点或移动端面板高度变化时，必须同步复核聚焦偏移。
+
+---
+
 ## 待确认
 
 - 未来是否引入内容管理系统（CMS）管理路线数据？
@@ -107,4 +154,4 @@ UI 文案、URL 路径、注释使用中文。TypeScript 标识符（类型、�
 
 ---
 
-Last updated: 2026-06-24
+Last updated: 2026-07-13

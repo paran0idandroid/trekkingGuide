@@ -1,5 +1,23 @@
 export type SheetLevel = 'summary' | 'nodes' | 'detail';
 
+interface RouteNodeLabelRule {
+  id: 'wusun-node-labels-core' | 'wusun-node-labels-secondary';
+  categories: string[];
+  minZoom: number;
+}
+
+type RouteNodeSelectionFilter = [
+  'all',
+  ['==', ['geometry-type'], 'Point'],
+  ['==', ['get', 'id'], string],
+];
+
+export const routeNodeSelectionStyle = {
+  ringRadius: 13,
+  ringBlur: 0.12,
+  labelHaloWidth: 2,
+} as const;
+
 const sheetLevels: SheetLevel[] = ['summary', 'nodes', 'detail'];
 const routeDashArrays = [
   [0, 4, 3],
@@ -19,6 +37,34 @@ export function createMapTilerOutdoorStyleUrl(apiKey: string): string {
 
 export function getRouteDashArray(frame: number): number[] {
   return [...routeDashArrays[Math.abs(Math.trunc(frame)) % routeDashArrays.length]];
+}
+
+export function getRouteNodeLabelRules(isMobile: boolean): RouteNodeLabelRule[] {
+  return [
+    {
+      id: 'wusun-node-labels-core',
+      categories: ['起点', '终点', '营地', '垭口'],
+      minZoom: 0,
+    },
+    {
+      id: 'wusun-node-labels-secondary',
+      categories: ['河流', '景点'],
+      minZoom: isMobile ? 11 : 0,
+    },
+  ];
+}
+
+export function getRouteNodeSelectionFilter(nodeId: string): RouteNodeSelectionFilter {
+  return [
+    'all',
+    ['==', ['geometry-type'], 'Point'],
+    ['==', ['get', 'id'], nodeId],
+  ];
+}
+
+export function getRouteNodeFocusOffset(viewportWidth: number, viewportHeight: number): [number, number] {
+  if (viewportWidth >= 1024) return [335, 0];
+  return [0, Math.round(viewportHeight * -0.39)];
 }
 
 export function moveSheetLevel(current: SheetLevel, direction: -1 | 1, hasSelectedNode = true): SheetLevel {

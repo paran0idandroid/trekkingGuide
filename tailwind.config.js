@@ -33,7 +33,11 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Noto Sans SC"', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Satoshi"', '"Noto Sans SC"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Nohemi"', '"Noto Sans SC"', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+      fontWeight: {
+        semibold: '700',
       },
     },
   },
