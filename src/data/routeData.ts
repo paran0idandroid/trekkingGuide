@@ -10,6 +10,7 @@ export const wusunRoute: RouteData = {
   overview: {
     distance: '120-130 km',
     duration: '6-7 天',
+    elevationGain: '6458 m',
     maxElevation: '约 3800 m',
     bestSeason: '6月底至10月初，8-9月较适合',
     difficulty: '高',
@@ -61,6 +62,42 @@ export const wusunRoute: RouteData = {
   gearProfileKey: 'wusun',
   gear: [
     '背包', '帐篷', '徒步鞋', '冲锋衣', '保暖层', '登山杖', '头灯', '睡袋', '涉水鞋',
+    '防晒用品', '急救包', '防水袋', '炉头套锅', '保温水壶', '手套', '遮阳帽', '墨镜', '充电宝',
+  ],
+};
+
+export const habaWestRoute: RouteData = {
+  slug: 'haba-west',
+  regionSlug: 'yunnan',
+  name: '哈巴西坡',
+  subtitle: '穿越双湖、黑海与连续高山垭口的三天两夜环线',
+  tags: ['云南', '哈巴雪山', '高山湖泊', '3天2夜', '中高难度'],
+  intro: '从咖啡营地出发，连续翻越双湖、夫妻海、黑海与鸡趾一带的高山垭口，最终返回起点。',
+  overview: {
+    distance: '23.3 km',
+    duration: '3 天 2 夜',
+    elevationGain: '1571 m',
+    maxElevation: '4384 m',
+    bestSeason: '5–9 月',
+    difficulty: '中高',
+    suitableFor: '有高海拔徒步和露营经验的人',
+  },
+  highlights: [],
+  itinerary: [
+    { day: 1, title: '咖啡营地 — 双湖营地｜5.7 km', description: '从海拔约3465米的咖啡营地出发，逐步爬升至双湖营地。第一天以适应海拔和建立稳定节奏为主。' },
+    { day: 2, title: '双湖营地 — 黑海营地｜7.1 km', description: '依次经过双湖垭口、夫妻海垭口和黑海垭口后抵达黑海营地，是全程连续翻越高海拔垭口的核心路段。' },
+    { day: 3, title: '黑海营地 — 咖啡营地｜10.5 km', description: '经过长湖和鸡趾垭口后下降，最终回到咖啡营地，完成三天两夜闭环。' },
+  ],
+  risks: [
+    { title: '高海拔与连续垭口', description: '路线最高记录海拔4384米，第二天连续翻越多个高山垭口，需要合理控制节奏并关注高原反应。' },
+    { title: '陡峭雪坡', description: '部分路段可能存在陡峭雪坡，应根据当季积雪判断通行条件，并准备相应防滑与安全装备。' },
+    { title: '无可靠补给', description: '全程无可靠补给。重装徒步需自备露营、食物和燃料；轻装方式需要提前联系当地马帮运输装备。' },
+    { title: '通信中断', description: '除起点外全程基本没有手机信号，应提前下载离线地图，并准备离线通信或应急方案。' },
+    { title: '水源信息不明确', description: '沿途可靠饮用水源信息不明确，不应把湖水或溪流视为稳定补给。出发前需向当地向导或马帮确认当季水源，并携带足够饮水及净水设备。' },
+  ],
+  gearProfileKey: 'haba-west',
+  gear: [
+    '背包', '帐篷', '徒步鞋', '冲锋衣', '保暖层', '登山杖', '头灯', '睡袋',
     '防晒用品', '急救包', '防水袋', '炉头套锅', '保温水壶', '手套', '遮阳帽', '墨镜', '充电宝',
   ],
 };

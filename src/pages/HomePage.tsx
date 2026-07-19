@@ -106,13 +106,15 @@ function RouteCard({ route }: { route: RouteData }) {
       onClick={() => navigate(`/route/${route.slug}`)}
       className="bg-white rounded-2xl shadow-sm border border-gray-100/80 overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
     >
-      <div className="aspect-[16/9] overflow-hidden">
-        <img
-          src={route.heroImage}
-          alt={route.name}
-          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-        />
-      </div>
+      {route.heroImage && (
+        <div className="aspect-[16/9] overflow-hidden">
+          <img
+            src={route.heroImage}
+            alt={route.name}
+            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+          />
+        </div>
+      )}
       <div className="p-5 md:p-6">
         <h3 className="text-lg md:text-xl font-semibold text-forest-800 mb-1.5">{route.name}</h3>
         <p className="text-sm text-forest-600 mb-3 line-clamp-2 leading-relaxed">{route.subtitle}</p>

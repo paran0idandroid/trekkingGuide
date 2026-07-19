@@ -37,7 +37,7 @@ export const regions: RegionDef[] = [
     id: 'yunnan',
     name: '云南',
     slug: 'yunnan',
-    routes: [],
+    routes: ['haba-west'],
     path: 'M 300,345 C 318,330 345,325 370,328 C 395,332 415,348 425,370 C 432,392 425,418 408,435 C 388,452 360,460 335,458 C 308,456 285,440 270,418 C 258,396 258,370 270,350 C 280,340 290,340 300,345 Z',
     labelX: 350,
     labelY: 398,

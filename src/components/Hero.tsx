@@ -21,11 +21,11 @@ export default function Hero({ route }: Props) {
   return (
     <section id="hero" className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
+        className={`absolute inset-0 bg-cover bg-center ${route.heroImage ? '' : 'bg-forest-900'}`}
+        style={route.heroImage ? {
           backgroundImage: `url(${route.heroImage})`,
           backgroundAttachment: 'fixed',
-        }}
+        } : undefined}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-forest-950/70 via-forest-950/45 to-forest-950/80" />
       <div className="absolute inset-0 bg-gradient-to-t from-forest-950/50 via-forest-950/20 to-forest-950/35" />

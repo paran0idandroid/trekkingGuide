@@ -1,8 +1,9 @@
 import { RouteData } from '../types';
-import { wusunRoute } from './routeData';
+import { habaWestRoute, wusunRoute } from './routeData';
 
 export const routeDataMap: Record<string, RouteData> = {
   'wusun': wusunRoute,
+  'haba-west': habaWestRoute,
   'everest-east': {
     slug: 'everest-east',
     regionSlug: 'xizang',

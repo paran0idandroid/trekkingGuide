@@ -52,6 +52,25 @@ export const routeGeoData: Record<string, RouteGeoData> = {
     ],
     color: '#a78bfa',
   },
+  'haba-west': {
+    slug: 'haba-west',
+    markerPoint: [100.066, 27.326],
+    linePoints: [
+      [100.066273, 27.286494],
+      [100.053165, 27.346224],
+      [100.054230, 27.358742],
+      [100.068445, 27.354640],
+      [100.080818, 27.338659],
+      [100.066273, 27.286494],
+    ],
+    waypoints: [
+      { name: '咖啡营地', coords: [100.066273, 27.286494] },
+      { name: '双湖垭口', coords: [100.053165, 27.346224] },
+      { name: '鸡趾垭口', coords: [100.080818, 27.338659] },
+      { name: '咖啡营地', coords: [100.066273, 27.286494] },
+    ],
+    color: '#34d399',
+  },
 };
 
 export function getRouteGeoData(slug: string): RouteGeoData | undefined {

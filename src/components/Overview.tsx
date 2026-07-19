@@ -7,16 +7,28 @@ gsap.registerPlugin(ScrollTrigger);
 
 interface Props { route: RouteData }
 
-const stats = [
-  { value: '120-130', unit: 'km', label: '全程距离' },
-  { value: '6-7', unit: '天', label: '徒步时间' },
-  { value: '3800', unit: 'm', label: '最高海拔' },
-  { value: '高', unit: '难度', label: '适合有经验者' },
-];
+function splitStat(value: string): { value: string; unit: string } {
+  const separator = value.lastIndexOf(' ');
+  if (separator === -1) return { value, unit: '' };
+  return { value: value.slice(0, separator), unit: value.slice(separator + 1) };
+}
+
+function splitDuration(value: string): { value: string; unit: string } {
+  const separator = value.indexOf(' ');
+  if (separator === -1) return { value, unit: '' };
+  return { value: value.slice(0, separator), unit: value.slice(separator + 1) };
+}
 
 export default function Overview({ route }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const backgroundImage = route.highlights[1]?.image ?? route.highlights[0]?.image;
+  const stats = [
+    { ...splitStat(route.overview.distance), label: '全程距离' },
+    { ...splitDuration(route.overview.duration), label: '徒步时间' },
+    { ...splitStat(route.overview.maxElevation), label: '最高海拔' },
+    { value: route.overview.difficulty, unit: '难度', label: '适合有经验者' },
+  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -31,11 +43,11 @@ export default function Overview({ route }: Props) {
   return (
     <section id="overview" ref={sectionRef} className="relative py-20 md:py-28 flex items-center overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${route.highlights[1]?.image || route.highlights[0]?.image})`,
+        className={`absolute inset-0 bg-cover bg-center ${backgroundImage ? '' : 'bg-forest-900'}`}
+        style={backgroundImage ? {
+          backgroundImage: `url(${backgroundImage})`,
           backgroundAttachment: 'fixed',
-        }}
+        } : undefined}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-forest-950/80 via-forest-950/70 to-forest-950/85" />
 

@@ -58,7 +58,7 @@ export default function RoutePage() {
       </div>
       <GearAdvisor routeName={route.slug} />
       <Overview route={route} />
-      <Highlights route={route} />
+      {route.highlights.length > 0 && <Highlights route={route} />}
       <Timeline route={route} />
       <Risks route={route} />
       <Footer />

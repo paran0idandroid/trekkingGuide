@@ -43,12 +43,27 @@ export default function RouteMapExperience({ route, config }: Props) {
       </button>
 
       <div className="hidden lg:block">
-        <RouteNodeList nodes={config.nodes} selectedNodeId={selectedNodeId} onSelect={selectNode} />
-        <RouteDetailPanel route={route} node={selectedNode} />
+        <RouteNodeList route={route} config={config} nodes={config.nodes} selectedNodeId={selectedNodeId} onSelect={selectNode} />
+        <RouteDetailPanel route={route} config={config} node={selectedNode} />
       </div>
+
+      {config.days && (
+        <div className="absolute bottom-6 right-3 z-10 hidden w-56 rounded-2xl border border-forest-100 bg-white p-3 shadow-xl lg:block">
+          {config.days.map((day) => (
+            <div key={day.day} className="flex items-start gap-2 py-1.5 text-xs text-forest-700">
+              <span className="mt-1.5 h-1 w-6 shrink-0 rounded-full" style={{ backgroundColor: day.color }} />
+              <span>
+                <strong>{day.label} · {day.distance}</strong><br />
+                {day.from} → {day.to}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <RouteMobileSheet
         route={route}
+        config={config}
         nodes={config.nodes}
         selectedNode={selectedNode}
         level={sheetLevel}

@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
-import maplibregl, { LngLatBounds, Map } from 'maplibre-gl';
+import maplibregl, { LngLatBounds, Map, type FilterSpecification } from 'maplibre-gl';
 import type { FeatureCollection, LineString, Point } from 'geojson';
 import type { RouteMapConfig } from '../types';
 import {
   getRouteDashArray,
+  getRouteLayerIds,
   getRouteNodeFocusOffset,
   getRouteNodeLabelRules,
   getRouteNodeSelectionFilter,
@@ -30,7 +31,9 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
 
     const abortController = new AbortController();
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const labelRules = getRouteNodeLabelRules(window.innerWidth < 1024);
+    const layerIds = getRouteLayerIds(config.routeSlug);
+    const labelRules = getRouteNodeLabelRules(config.routeSlug, window.innerWidth < 1024);
+    let motionLayerIds: string[] = [];
     let animationFrame: number | undefined;
     let animationStart = 0;
     let lastAnimationStep = -1;
@@ -62,9 +65,13 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
     const animateTrack = (timestamp: number) => {
       if (!animationStart) animationStart = timestamp;
       const step = Math.floor((timestamp - animationStart) / 120);
-      if (step !== lastAnimationStep && map.getLayer('wusun-track-motion')) {
+      if (step !== lastAnimationStep && motionLayerIds.length > 0) {
         lastAnimationStep = step;
-        map.setPaintProperty('wusun-track-motion', 'line-dasharray', getRouteDashArray(step));
+        motionLayerIds.forEach((layerId) => {
+          if (map.getLayer(layerId)) {
+            map.setPaintProperty(layerId, 'line-dasharray', getRouteDashArray(step));
+          }
+        });
       }
       animationFrame = requestAnimationFrame(animateTrack);
     };
@@ -74,18 +81,22 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
       animationFrame = undefined;
       animationStart = 0;
       lastAnimationStep = -1;
-      if (!map.getLayer('wusun-track-motion')) return;
-      map.setPaintProperty('wusun-track-motion', 'line-opacity', reducedMotion.matches ? 0.65 : 0.9);
-      if (reducedMotion.matches) {
-        map.setPaintProperty('wusun-track-motion', 'line-dasharray', getRouteDashArray(0));
-      } else if (!document.hidden) {
+      if (motionLayerIds.length === 0) return;
+      motionLayerIds.forEach((layerId) => {
+        if (!map.getLayer(layerId)) return;
+        map.setPaintProperty(layerId, 'line-opacity', reducedMotion.matches ? 0.65 : 0.9);
+        if (reducedMotion.matches) {
+          map.setPaintProperty(layerId, 'line-dasharray', getRouteDashArray(0));
+        }
+      });
+      if (!reducedMotion.matches && !document.hidden) {
         animationFrame = requestAnimationFrame(animateTrack);
       }
     };
 
     const syncNodeLabels = () => {
       const isMobile = window.innerWidth < 1024;
-      getRouteNodeLabelRules(isMobile).forEach(({ id, minZoom }) => {
+      getRouteNodeLabelRules(config.routeSlug, isMobile).forEach(({ id, minZoom }) => {
         if (!map.getLayer(id)) return;
         map.setLayerZoomRange(id, minZoom, 24);
         map.setLayoutProperty(id, 'text-size', isMobile ? 12 : 13);
@@ -93,8 +104,8 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
     };
 
     const highlightSelectedNode = (nodeId: string) => {
-      if (!map.getLayer('wusun-node-selection')) return;
-      map.setFilter('wusun-node-selection', getRouteNodeSelectionFilter(nodeId));
+      if (!map.getLayer(layerIds.nodeSelection)) return;
+      map.setFilter(layerIds.nodeSelection, getRouteNodeSelectionFilter(nodeId));
     };
 
     map.on('load', async () => {
@@ -103,37 +114,78 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const geoJson = await response.json() as FeatureCollection<LineString | Point>;
 
-        map.addSource('wusun', { type: 'geojson', data: geoJson });
+        map.addSource(layerIds.source, { type: 'geojson', data: geoJson });
+
+        if (config.days?.length) {
+          motionLayerIds = config.days.map((day) => `${config.routeSlug}-day-${day.day}-motion`);
+          config.days.forEach((day) => {
+            const filter: FilterSpecification = [
+              'all',
+              ['==', ['geometry-type'], 'LineString'],
+              ['==', ['get', 'day'], day.day],
+            ];
+            map.addLayer({
+              id: `${config.routeSlug}-day-${day.day}-outline`,
+              type: 'line',
+              source: layerIds.source,
+              filter,
+              paint: { 'line-color': config.colors.outline, 'line-width': 8, 'line-opacity': 0.92 },
+            });
+            map.addLayer({
+              id: `${config.routeSlug}-day-${day.day}-track`,
+              type: 'line',
+              source: layerIds.source,
+              filter,
+              paint: { 'line-color': day.color, 'line-width': 4 },
+            });
+            map.addLayer({
+              id: `${config.routeSlug}-day-${day.day}-motion`,
+              type: 'line',
+              source: layerIds.source,
+              filter,
+              paint: {
+                'line-color': config.colors.outline,
+                'line-width': 2,
+                'line-opacity': reducedMotion.matches ? 0.65 : 0.9,
+                'line-dasharray': getRouteDashArray(0),
+              },
+            });
+          });
+        } else {
+          const trackId = `${config.routeSlug}-track`;
+          const motionId = `${config.routeSlug}-track-motion`;
+          motionLayerIds = [motionId];
+          map.addLayer({
+            id: layerIds.trackOutline,
+            type: 'line',
+            source: layerIds.source,
+            filter: ['==', ['geometry-type'], 'LineString'],
+            paint: { 'line-color': config.colors.outline, 'line-width': 8, 'line-opacity': 0.92 },
+          });
+          map.addLayer({
+            id: trackId,
+            type: 'line',
+            source: layerIds.source,
+            filter: ['==', ['geometry-type'], 'LineString'],
+            paint: { 'line-color': config.colors.track, 'line-width': 4 },
+          });
+          map.addLayer({
+            id: motionId,
+            type: 'line',
+            source: layerIds.source,
+            filter: ['==', ['geometry-type'], 'LineString'],
+            paint: {
+              'line-color': config.colors.outline,
+              'line-width': 2,
+              'line-opacity': reducedMotion.matches ? 0.65 : 0.9,
+              'line-dasharray': getRouteDashArray(0),
+            },
+          });
+        }
         map.addLayer({
-          id: 'wusun-track-outline',
-          type: 'line',
-          source: 'wusun',
-          filter: ['==', ['geometry-type'], 'LineString'],
-          paint: { 'line-color': config.colors.outline, 'line-width': 8, 'line-opacity': 0.92 },
-        });
-        map.addLayer({
-          id: 'wusun-track',
-          type: 'line',
-          source: 'wusun',
-          filter: ['==', ['geometry-type'], 'LineString'],
-          paint: { 'line-color': config.colors.track, 'line-width': 4 },
-        });
-        map.addLayer({
-          id: 'wusun-track-motion',
-          type: 'line',
-          source: 'wusun',
-          filter: ['==', ['geometry-type'], 'LineString'],
-          paint: {
-            'line-color': config.colors.outline,
-            'line-width': 2,
-            'line-opacity': reducedMotion.matches ? 0.65 : 0.9,
-            'line-dasharray': getRouteDashArray(0),
-          },
-        });
-        map.addLayer({
-          id: 'wusun-node-selection',
+          id: layerIds.nodeSelection,
           type: 'circle',
-          source: 'wusun',
+          source: layerIds.source,
           filter: getRouteNodeSelectionFilter(selectedNodeIdRef.current ?? ''),
           paint: {
             'circle-radius': routeNodeSelectionStyle.ringRadius,
@@ -142,9 +194,9 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
           },
         });
         map.addLayer({
-          id: 'wusun-nodes',
+          id: layerIds.nodes,
           type: 'circle',
-          source: 'wusun',
+          source: layerIds.source,
           filter: ['==', ['geometry-type'], 'Point'],
           paint: {
             'circle-radius': 7,
@@ -157,7 +209,7 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
           map.addLayer({
             id: rule.id,
             type: 'symbol',
-            source: 'wusun',
+            source: layerIds.source,
             minzoom: rule.minZoom,
             filter: [
               'all',
@@ -184,9 +236,11 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
         });
         if (selectedNodeIdRef.current) highlightSelectedNode(selectedNodeIdRef.current);
 
-        const track = geoJson.features.find((feature) => feature.geometry.type === 'LineString');
-        if (!track || track.geometry.type !== 'LineString') throw new Error('缺少连续轨迹');
-        const bounds = track.geometry.coordinates.reduce(
+        const coordinates = geoJson.features.flatMap((feature) => (
+          feature.geometry.type === 'LineString' ? feature.geometry.coordinates : []
+        ));
+        if (coordinates.length < 2) throw new Error('缺少连续轨迹');
+        const bounds = coordinates.reduce(
           (value, coordinate) => value.extend([coordinate[0], coordinate[1]]),
           new maplibregl.LngLatBounds(),
         );
@@ -200,13 +254,13 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
       }
     });
 
-    ['wusun-nodes', ...labelRules.map((rule) => rule.id)].forEach((layerId) => {
-      map.on('click', layerId, (event) => {
+    [layerIds.nodes, ...labelRules.map((rule) => rule.id)].forEach((interactiveLayerId) => {
+      map.on('click', interactiveLayerId, (event) => {
         const id = event.features?.[0]?.properties?.id;
         if (typeof id === 'string') onSelectNode(id);
       });
-      map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
+      map.on('mouseenter', interactiveLayerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', interactiveLayerId, () => { map.getCanvas().style.cursor = ''; });
     });
 
     document.addEventListener('visibilitychange', syncTrackAnimation);
@@ -230,8 +284,9 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
     const node = config.nodes.find((candidate) => candidate.id === selectedNodeId);
     if (!node) throw new Error(`不存在的地图节点：${selectedNodeId}`);
     const map = mapRef.current;
-    if (map?.getLayer('wusun-node-selection')) {
-      map.setFilter('wusun-node-selection', getRouteNodeSelectionFilter(selectedNodeId));
+    const layerIds = getRouteLayerIds(config.routeSlug);
+    if (map?.getLayer(layerIds.nodeSelection)) {
+      map.setFilter(layerIds.nodeSelection, getRouteNodeSelectionFilter(selectedNodeId));
     }
     const container = map?.getContainer();
     mapRef.current?.easeTo({
@@ -240,12 +295,12 @@ export default function RouteMapCanvas({ config, selectedNodeId, fitRequestKey, 
       offset: container ? getRouteNodeFocusOffset(container.clientWidth, container.clientHeight) : [0, 0],
       duration: 600,
     });
-  }, [config.nodes, selectedNodeId]);
+  }, [config.nodes, config.routeSlug, selectedNodeId]);
 
   useEffect(() => {
     if (fitRequestKey === 0 || !boundsRef.current) return;
     mapRef.current?.fitBounds(boundsRef.current, { padding: 72, duration: 600 });
   }, [fitRequestKey]);
 
-  return <div ref={containerRef} className="absolute inset-0" aria-label="乌孙古道交互地图" />;
+  return <div ref={containerRef} className="absolute inset-0" aria-label={config.ariaLabel} />;
 }

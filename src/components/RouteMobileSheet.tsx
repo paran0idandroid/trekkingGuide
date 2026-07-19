@@ -1,9 +1,10 @@
 import { useRef, type PointerEvent } from 'react';
 import { moveSheetLevel, type SheetLevel } from '../lib/routeMapState';
-import type { RouteData, RouteMapNode } from '../types';
+import type { RouteData, RouteMapConfig, RouteMapNode } from '../types';
 
 interface Props {
   route: RouteData;
+  config: RouteMapConfig;
   nodes: RouteMapNode[];
   selectedNode?: RouteMapNode;
   level: SheetLevel;
@@ -14,6 +15,7 @@ interface Props {
 
 export default function RouteMobileSheet({
   route,
+  config,
   nodes,
   selectedNode,
   level,
@@ -51,9 +53,11 @@ export default function RouteMobileSheet({
         {level === 'summary' && (
           <>
             <h2 className="text-xl font-bold text-forest-800">{route.name}</h2>
-            <p className="mt-1 text-xs text-forest-500">琼库什台方向起点 → 黑英山方向出口</p>
+            <p className="mt-1 text-xs text-forest-500">{config.pathLabel}</p>
             <div className="mt-4 flex gap-5 text-sm text-forest-700">
-              <span>106.9 km</span><span>6 天</span><span>↑ 6458 m</span>
+              {config.summaryStats.map((stat) => (
+                <span key={stat.label}>{stat.label === '爬升' && '↑ '}{stat.value}</span>
+              ))}
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button type="button" onClick={onFitRoute} className="rounded-xl bg-sand-100 px-4 py-3 text-sm font-semibold text-sand-800">适应路线</button>
@@ -71,10 +75,12 @@ export default function RouteMobileSheet({
             <div className="mt-3 space-y-2">
               {nodes.map((node) => (
                 <button key={node.id} type="button" onClick={() => selectNode(node.id)} className="flex w-full items-center gap-3 rounded-xl bg-sand-50 p-2.5 text-left">
-                  <img src={node.image} alt="" className="h-14 w-14 rounded-lg object-cover" />
+                  {node.image && (
+                    <img src={node.image} alt="" className="h-14 w-14 rounded-lg object-cover" />
+                  )}
                   <span>
                     <strong className="block text-sm text-forest-800">{node.name}</strong>
-                    <span className="text-xs text-forest-500">{node.category} · {Math.round(node.coordinates[2])} m</span>
+                    <span className="text-xs text-forest-500">{node.dayLabel && `${node.dayLabel} · `}{node.category} · {Math.round(node.coordinates[2])} m</span>
                   </span>
                 </button>
               ))}
@@ -84,7 +90,9 @@ export default function RouteMobileSheet({
 
         {level === 'detail' && selectedNode && (
           <>
-            <img src={selectedNode.image} alt={selectedNode.name} className="h-40 w-full rounded-2xl object-cover" />
+            {selectedNode.image && (
+              <img src={selectedNode.image} alt={selectedNode.name} className="h-40 w-full rounded-2xl object-cover" />
+            )}
             <span className="mt-4 inline-flex rounded-full bg-sand-100 px-2.5 py-1 text-xs text-sand-800">{selectedNode.category}</span>
             <h2 className="mt-3 text-xl font-bold text-forest-800">{selectedNode.name}</h2>
             <p className="mt-2 text-sm leading-relaxed text-forest-600">{selectedNode.description}</p>

@@ -9,6 +9,7 @@ interface Props { route: RouteData }
 
 export default function Timeline({ route }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
+  const backgroundImage = route.highlights[3]?.image;
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -26,17 +27,17 @@ export default function Timeline({ route }: Props) {
     <section id="itinerary" ref={sectionRef} className="relative py-20 md:py-28 overflow-hidden">
       {/* Subtle bg */}
       <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${route.highlights[3].image})`,
+        className={`absolute inset-0 bg-cover bg-center ${backgroundImage ? '' : 'bg-forest-900'}`}
+        style={backgroundImage ? {
+          backgroundImage: `url(${backgroundImage})`,
           backgroundAttachment: 'fixed',
-        }}
+        } : undefined}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-forest-950/90 to-forest-950/92" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-white/90 mb-2 tracking-wide">每日行程</h2>
-        <p className="text-white/40 text-sm mb-12">7天穿越天山南北</p>
+        <p className="text-white/40 text-sm mb-12">{route.overview.duration}路线安排</p>
 
         <div className="relative">
           {/* Vertical line */}

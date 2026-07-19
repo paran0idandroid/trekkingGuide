@@ -30,6 +30,7 @@ justdemo/
 ├── postcss.config.js          # PostCSS + Tailwind
 ├── public/
 │   ├── pics/                  # 静态图片素材 (.webp)
+│   ├── routes/                # 脱敏路线 GeoJSON
 │   └── fonts/nohemi/          # Nohemi 本地 WOFF2 字体
 ├── src/
 │   ├── main.tsx               # React 入口
@@ -109,7 +110,7 @@ GearAdvisor (状态编排)
 - `gearCatalog` 按品类分组的品牌产品数据库
 - 所有数据为硬编码 TypeScript 模块，无后端依赖
 
-### 乌孙古道地图
+### 交互路线地图
 
 ```
 RouteMapExperience（选中节点与移动端抽屉状态）
@@ -121,8 +122,11 @@ RouteMapExperience（选中节点与移动端抽屉状态）
 
 - MapTiler Outdoor 提供等高线、山体阴影和户外道路底图，Key 由 `VITE_MAPTILER_API_KEY` 注入
 - 路线轨迹和节点来自本地脱敏 GeoJSON，地图组件按路由动态加载
+- 乌孙古道使用单条连续轨迹；哈巴西坡使用三条按日分色的连续轨迹
+- 地图 source/layer ID 按 route slug 隔离，路线摘要、路径名称和节点内容由配置注入
 - 节点名称由 MapLibre Symbol 图层绘制：桌面显示全部，移动端优先显示核心节点
 - 选中节点使用深绿双环；聚焦位置按桌面浮层和移动端详情面板的可见区域偏移
+- 路线图片和节点图片允许缺省；无图路线不会渲染空图片框或无效请求
 
 ## 样式体系
 
@@ -133,4 +137,4 @@ RouteMapExperience（选中节点与移动端抽屉状态）
 
 ---
 
-Last updated: 2026-07-13
+Last updated: 2026-07-19

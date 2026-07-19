@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createMapTilerOutdoorStyleUrl,
+  getRouteLayerIds,
   getRouteNodeSelectionFilter,
   routeNodeSelectionStyle,
   getRouteDashArray,
@@ -32,7 +33,7 @@ test('getRouteDashArray cycles through a stable animation sequence', () => {
 });
 
 test('getRouteNodeLabelRules shows every node label on desktop', () => {
-  const rules = getRouteNodeLabelRules(false);
+  const rules = getRouteNodeLabelRules('wusun', false);
 
   assert.deepEqual(
     rules.map(({ id, minZoom }) => ({ id, minZoom })),
@@ -43,17 +44,41 @@ test('getRouteNodeLabelRules shows every node label on desktop', () => {
   );
   assert.deepEqual(
     rules.flatMap(({ categories }) => categories),
-    ['起点', '终点', '营地', '垭口', '河流', '景点'],
+    ['起点', '终点', '起终点', '营地', '垭口', '河流', '景点'],
   );
 });
 
 test('getRouteNodeLabelRules delays secondary labels on mobile', () => {
-  const [core, secondary] = getRouteNodeLabelRules(true);
+  const [core, secondary] = getRouteNodeLabelRules('wusun', true);
 
-  assert.deepEqual(core.categories, ['起点', '终点', '营地', '垭口']);
+  assert.deepEqual(core.categories, ['起点', '终点', '起终点', '营地', '垭口']);
   assert.equal(core.minZoom, 0);
   assert.deepEqual(secondary.categories, ['河流', '景点']);
   assert.equal(secondary.minZoom, 11);
+});
+
+test('route layer ids are namespaced by route slug', () => {
+  assert.deepEqual(getRouteLayerIds('haba-west'), {
+    source: 'haba-west',
+    trackOutline: 'haba-west-track-outline',
+    nodeSelection: 'haba-west-node-selection',
+    nodes: 'haba-west-nodes',
+    coreLabels: 'haba-west-node-labels-core',
+    secondaryLabels: 'haba-west-node-labels-secondary',
+  });
+});
+
+test('route label rules include the combined start and end category', () => {
+  const rules = getRouteNodeLabelRules('haba-west', false);
+
+  assert.deepEqual(
+    rules.flatMap(({ categories }) => categories),
+    ['起点', '终点', '起终点', '营地', '垭口', '河流', '景点'],
+  );
+  assert.deepEqual(
+    rules.map(({ id }) => id),
+    ['haba-west-node-labels-core', 'haba-west-node-labels-secondary'],
+  );
 });
 
 test('selected route node uses a double ring without changing the label treatment', () => {

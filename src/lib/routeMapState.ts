@@ -1,7 +1,7 @@
 export type SheetLevel = 'summary' | 'nodes' | 'detail';
 
 interface RouteNodeLabelRule {
-  id: 'wusun-node-labels-core' | 'wusun-node-labels-secondary';
+  id: string;
   categories: string[];
   minZoom: number;
 }
@@ -39,15 +39,27 @@ export function getRouteDashArray(frame: number): number[] {
   return [...routeDashArrays[Math.abs(Math.trunc(frame)) % routeDashArrays.length]];
 }
 
-export function getRouteNodeLabelRules(isMobile: boolean): RouteNodeLabelRule[] {
+export function getRouteLayerIds(routeSlug: string) {
+  return {
+    source: routeSlug,
+    trackOutline: `${routeSlug}-track-outline`,
+    nodeSelection: `${routeSlug}-node-selection`,
+    nodes: `${routeSlug}-nodes`,
+    coreLabels: `${routeSlug}-node-labels-core`,
+    secondaryLabels: `${routeSlug}-node-labels-secondary`,
+  } as const;
+}
+
+export function getRouteNodeLabelRules(routeSlug: string, isMobile: boolean): RouteNodeLabelRule[] {
+  const ids = getRouteLayerIds(routeSlug);
   return [
     {
-      id: 'wusun-node-labels-core',
-      categories: ['起点', '终点', '营地', '垭口'],
+      id: ids.coreLabels,
+      categories: ['起点', '终点', '起终点', '营地', '垭口'],
       minZoom: 0,
     },
     {
-      id: 'wusun-node-labels-secondary',
+      id: ids.secondaryLabels,
       categories: ['河流', '景点'],
       minZoom: isMobile ? 11 : 0,
     },

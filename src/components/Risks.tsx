@@ -17,6 +17,7 @@ const riskIcons = [
 
 export default function Risks({ route }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
+  const backgroundImage = route.highlights[0]?.image;
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -33,11 +34,11 @@ export default function Risks({ route }: Props) {
   return (
     <section id="risks" ref={sectionRef} className="relative py-20 md:py-28 overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${route.highlights[0].image})`,
+        className={`absolute inset-0 bg-cover bg-center ${backgroundImage ? '' : 'bg-forest-950'}`}
+        style={backgroundImage ? {
+          backgroundImage: `url(${backgroundImage})`,
           backgroundAttachment: 'fixed',
-        }}
+        } : undefined}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-forest-950/95 to-forest-950/92" />
 

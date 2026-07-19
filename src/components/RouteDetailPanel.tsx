@@ -1,18 +1,23 @@
-import type { RouteData, RouteMapNode } from '../types';
+import type { RouteData, RouteMapConfig, RouteMapNode } from '../types';
 
 interface Props {
   route: RouteData;
+  config: RouteMapConfig;
   node?: RouteMapNode;
 }
 
-export default function RouteDetailPanel({ route, node }: Props) {
+export default function RouteDetailPanel({ route, config, node }: Props) {
+  const image = node?.image ?? route.heroImage;
+
   return (
     <aside className="absolute left-[340px] top-20 bottom-6 z-10 w-[330px] overflow-hidden rounded-2xl bg-white shadow-xl border border-forest-100">
-      <img
-        src={node?.image || route.heroImage}
-        alt={node?.name || route.name}
-        className="h-[42%] w-full object-cover"
-      />
+      {image && (
+        <img
+          src={image}
+          alt={node?.name || route.name}
+          className="h-[42%] w-full object-cover"
+        />
+      )}
       <div className="p-5">
         <span className="inline-flex rounded-full bg-sand-100 px-2.5 py-1 text-xs font-medium text-sand-800">
           {node?.category || '高难度徒步'}
@@ -28,10 +33,10 @@ export default function RouteDetailPanel({ route, node }: Props) {
             海拔 {Math.round(node.coordinates[2])} m
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-            <RouteStat label="距离" value="106.9 km" />
-            <RouteStat label="时间" value="6 天" />
-            <RouteStat label="爬升" value="6458 m" />
+          <div className={`mt-4 grid gap-2 text-center ${config.summaryStats.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            {config.summaryStats.map((stat) => (
+              <RouteStat key={stat.label} label={stat.label} value={stat.value} />
+            ))}
           </div>
         )}
       </div>

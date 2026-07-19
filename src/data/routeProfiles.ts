@@ -21,6 +21,16 @@ const routeGearProfiles: Record<string, GearProfile> = {
     resupplyPoint: false,
     exposure: ['极高海拔', '强紫外线', '暴风雪'],
   },
+  'haba-west': {
+    totalDays: 3,
+    maxAltitude: 4384,
+    overnightLowest: 0,
+    terrain: ['高山草甸', '碎石坡', '垭口', '雪坡'],
+    waterCrossing: false,
+    waterSource: '可靠水源信息不明确',
+    resupplyPoint: false,
+    exposure: ['高海拔', '强紫外线', '失联风险'],
+  },
 };
 
 export function getGearProfile(routeName: string): GearProfile | undefined {

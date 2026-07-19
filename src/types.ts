@@ -11,10 +11,11 @@ export interface RouteData {
   subtitle: string;
   tags: string[];
   intro?: string;
-  heroImage: string;
+  heroImage?: string;
   overview: {
     distance: string;
     duration: string;
+    elevationGain?: string;
     maxElevation: string;
     bestSeason: string;
     difficulty: string;
@@ -34,15 +35,25 @@ export interface RouteData {
   gearProfileKey?: string;
 }
 
-export type RouteMapNodeCategory = '起点' | '终点' | '营地' | '垭口' | '河流' | '景点';
+export type RouteMapNodeCategory = '起点' | '终点' | '起终点' | '营地' | '垭口' | '河流' | '景点';
 
 export interface RouteMapNode {
   id: string;
   name: string;
   category: RouteMapNodeCategory;
+  dayLabel?: string;
   description: string;
-  image: string;
+  image?: string;
   coordinates: [number, number, number];
+}
+
+export interface RouteMapDay {
+  day: 1 | 2 | 3;
+  label: string;
+  distance: string;
+  from: string;
+  to: string;
+  color: string;
 }
 
 export interface RouteMapConfig {
@@ -50,11 +61,15 @@ export interface RouteMapConfig {
   geoJsonUrl: string;
   styleUrl: string;
   center: [number, number];
+  ariaLabel: string;
+  pathLabel: string;
   colors: {
     track: string;
     outline: string;
     node: string;
   };
+  summaryStats: { label: string; value: string }[];
+  days?: RouteMapDay[];
   nodes: RouteMapNode[];
 }
 
