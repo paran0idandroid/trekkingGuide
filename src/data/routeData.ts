@@ -82,7 +82,13 @@ export const habaWestRoute: RouteData = {
     difficulty: '中高',
     suitableFor: '有高海拔徒步和露营经验的人',
   },
-  highlights: [],
+  highlights: [
+    { title: '哈巴西坡沿途风景 01', description: '哈巴西坡环线沿途实景。', image: '/pics/haba/scene-1.webp' },
+    { title: '哈巴西坡沿途风景 02', description: '哈巴西坡环线沿途实景。', image: '/pics/haba/scene-2.webp' },
+    { title: '哈巴西坡沿途风景 03', description: '哈巴西坡环线沿途实景。', image: '/pics/haba/scene-3.webp' },
+    { title: '哈巴西坡沿途风景 04', description: '哈巴西坡环线沿途实景。', image: '/pics/haba/scene-4.webp' },
+    { title: '哈巴西坡沿途风景 05', description: '哈巴西坡环线沿途实景。', image: '/pics/haba/scene-5.webp' },
+  ],
   itinerary: [
     { day: 1, title: '咖啡营地 — 双湖营地｜5.7 km', description: '从海拔约3465米的咖啡营地出发，逐步爬升至双湖营地。第一天以适应海拔和建立稳定节奏为主。' },
     { day: 2, title: '双湖营地 — 黑海营地｜7.1 km', description: '依次经过双湖垭口、夫妻海垭口和黑海垭口后抵达黑海营地，是全程连续翻越高海拔垭口的核心路段。' },
