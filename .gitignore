@@ -10,6 +10,7 @@ dist/
 .gstack/
 .superpowers/
 .font-sources/
+.local-data/
 
 # Local Netlify folder
 .netlify/

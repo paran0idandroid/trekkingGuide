@@ -313,6 +313,377 @@ html {
   animation: fadeIn 0.25s ease-out;
 }
 
+@keyframes gear-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gear-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gear-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.gear-pressable {
+  transition:
+    transform 100ms ease-out,
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.gear-pressable:active {
+  transform: scale(0.98);
+}
+
+.gear-surface-enter {
+  transform-origin: top right;
+  animation: gear-popover-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gear-tab-indicator {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.gear-action-surface,
+.gear-add-surface {
+  transform-origin: bottom center;
+  will-change: transform, opacity;
+}
+
+.gear-sheet-enter {
+  animation: gear-sheet-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gear-scrim {
+  animation: gear-scrim-in 160ms ease-out both;
+}
+
+.gear-owned-check,
+.gear-owned-check svg,
+.gear-item-dot {
+  transition:
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.gear-owned-check[data-pending='true'] svg {
+  transform: scale(1);
+}
+
+/* 我的装备：iOS Liquid Glass 局部材质系统 */
+.gear-page-environment {
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 88% 7%, rgba(77, 144, 102, 0.52), transparent 30%),
+    radial-gradient(circle at 12% 78%, rgba(226, 191, 135, 0.46), transparent 32%),
+    linear-gradient(118deg, transparent 18%, rgba(162, 203, 175, 0.36) 38%, transparent 60%),
+    linear-gradient(145deg, rgba(237, 245, 240, 0.96), rgba(247, 237, 217, 0.78));
+}
+
+.gear-inventory-stage {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100svh - 4rem);
+}
+
+.gear-glass-panel,
+.gear-glass-segment,
+.gear-glass-chip,
+.gear-glass-primary,
+.gear-glass-action,
+.gear-glass-item {
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
+}
+
+.gear-glass-module {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  background: transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(77, 144, 102, 0.16),
+    0 14px 34px rgba(17, 47, 38, 0.13);
+}
+
+.gear-glass-module::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.58),
+    rgba(237, 245, 240, 0.24)
+  );
+  -webkit-backdrop-filter: blur(25px) saturate(190%);
+  backdrop-filter: blur(25px) saturate(190%);
+  pointer-events: none;
+}
+
+.gear-glass-module::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.74), transparent 32%),
+    linear-gradient(115deg, rgba(255, 255, 255, 0.24), transparent 38%, rgba(162, 203, 175, 0.18));
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.gear-glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.94);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.76),
+    rgba(237, 245, 240, 0.5)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(77, 144, 102, 0.18),
+    0 18px 48px rgba(13, 32, 26, 0.18);
+  -webkit-backdrop-filter: blur(30px) saturate(165%);
+  backdrop-filter: blur(30px) saturate(165%);
+}
+
+.gear-glass-segment {
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  background: rgba(237, 245, 240, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 -1px 0 rgba(77, 144, 102, 0.12),
+    0 8px 22px rgba(17, 47, 38, 0.1);
+}
+
+.gear-tab-indicator {
+  border: 1px solid rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(77, 144, 102, 0.14),
+    0 6px 18px rgba(17, 47, 38, 0.13);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+.gear-glass-chip {
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.gear-glass-primary {
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(
+    145deg,
+    rgba(111, 173, 133, 0.86),
+    rgba(26, 77, 62, 0.82)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(22, 62, 50, 0.3),
+    0 10px 26px rgba(22, 62, 50, 0.25);
+  -webkit-backdrop-filter: blur(22px) saturate(190%);
+  backdrop-filter: blur(22px) saturate(190%);
+}
+
+.gear-glass-primary:hover {
+  background: linear-gradient(
+    145deg,
+    rgba(111, 173, 133, 0.94),
+    rgba(22, 62, 50, 0.9)
+  );
+}
+
+.gear-glass-action {
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    inset 0 -1px 0 rgba(77, 144, 102, 0.1);
+}
+
+.gear-glass-action:hover {
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    0 4px 12px rgba(17, 47, 38, 0.08);
+}
+
+.gear-glass-item {
+  border: 1px solid transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.gear-glass-item:hover,
+.gear-glass-item:focus-visible,
+.gear-glass-item[aria-expanded='true'] {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.62),
+    rgba(237, 245, 240, 0.3)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 14px rgba(17, 47, 38, 0.08);
+}
+
+.gear-glass-check {
+  box-shadow: none;
+}
+
+.gear-glass-check > span {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 5px 14px rgba(22, 62, 50, 0.14);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+.gear-glass-primary:active,
+.gear-glass-action:active,
+.gear-glass-item:active {
+  transform: scale(0.98);
+}
+
+@media (min-width: 640px) {
+  .gear-action-surface,
+  .gear-add-surface {
+    transform-origin: top right;
+  }
+
+  .gear-sheet-enter {
+    animation-name: gear-popover-in;
+    animation-duration: 180ms;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gear-inventory-stage {
+    min-height: calc(100svh - 4rem);
+  }
+
+  .gear-glass-module {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 1),
+      inset 0 -1px 0 rgba(77, 144, 102, 0.16),
+      0 16px 38px rgba(17, 47, 38, 0.14);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gear-pressable {
+    transition: none;
+  }
+
+  .gear-pressable:active {
+    transform: none;
+  }
+
+  .gear-surface-enter {
+    animation: gear-scrim-in 120ms linear both;
+  }
+
+  .gear-tab-indicator,
+  .gear-owned-check,
+  .gear-owned-check svg,
+  .gear-item-dot {
+    transition: none;
+  }
+
+  .gear-sheet-enter,
+  .gear-scrim {
+    animation: gear-scrim-in 120ms linear both;
+  }
+
+  .gear-glass-primary:active,
+  .gear-glass-action:active,
+  .gear-glass-item:active {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .gear-page-environment {
+    background: rgb(237, 245, 240);
+  }
+
+  .gear-glass-module::after {
+    display: none;
+  }
+
+  .gear-action-surface,
+  .gear-add-surface,
+  .gear-glass-module::before,
+  .gear-glass-panel,
+  .gear-glass-segment,
+  .gear-glass-chip,
+  .gear-glass-action,
+  .gear-glass-item,
+  .gear-glass-check > span,
+  .gear-tab-indicator {
+    background-color: white;
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .gear-glass-primary {
+    background-color: rgb(26, 77, 62);
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .gear-action-surface,
+  .gear-add-surface,
+  .gear-owned-check > span,
+  .gear-glass-module,
+  .gear-glass-panel,
+  .gear-glass-segment,
+  .gear-glass-chip,
+  .gear-glass-primary,
+  .gear-glass-action,
+  .gear-glass-item,
+  .gear-glass-check > span,
+  .gear-tab-indicator {
+    border-width: 2px;
+  }
+
+  .gear-glass-item {
+    border-color: rgb(26, 77, 62);
+    background-color: white;
+  }
+}
+
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 8px rgba(255,255,255,0.05); }
   50% { box-shadow: 0 0 16px rgba(255,255,255,0.12); }

@@ -25,7 +25,7 @@
 - Modify: `src/components/GearInventorySystemCard.tsx`
 - Modify: `src/components/WantedGearList.tsx`
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 在 `scripts/gear-inventory-ui.test.mjs` 新增：
 
@@ -46,12 +46,12 @@ test('装备操作弹窗点击当前装备区域外后关闭', async () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `node --test scripts/gear-inventory-ui.test.mjs`  
 Expected: FAIL，两个组件尚无 `actionAreaRefs` 或 `pointerdown` 监听。
 
-- [ ] **Step 3: 实现最小外部点击检测**
+- [x] **Step 3: 实现最小外部点击检测**
 
 两个组件均使用现有 React import 中的 `useEffect`、`useRef` 和 `useState`。新增装备行引用：
 
@@ -86,12 +86,12 @@ ref={element => {
 
 已有装备组件保留现有 `activeStatus` effect；待购买组件把 React import 补为 `useEffect, useRef, useState`。不添加遮罩层，不让外部点击取消编辑、改系统或删除确认。
 
-- [ ] **Step 4: 运行目标测试确认通过**
+- [x] **Step 4: 运行目标测试确认通过**
 
 Run: `node --test scripts/gear-inventory-ui.test.mjs`  
 Expected: PASS。
 
-- [ ] **Step 5: 运行全量自动化验证**
+- [x] **Step 5: 运行全量自动化验证**
 
 ```bash
 node --test scripts/*.test.mjs
@@ -107,7 +107,7 @@ Expected: 全量 Node 测试、Vite production build 和差异格式检查通过
 - Modify: `/Users/jon/Documents/Obliviate/20_Projects/justdemo/STATUS.md`
 - Modify: `/Users/jon/Documents/Obliviate/10_User/Preferences.md`
 
-- [ ] **Step 1: 桌面浏览器验证**
+- [x] **Step 1: 桌面浏览器验证**
 
 在 `http://localhost:58514/my-gear` 验证：
 
@@ -116,15 +116,15 @@ Expected: 全量 Node 测试、Vite production build 和差异格式检查通过
 3. 待购买：点击名称打开弹窗，点击输入框或清单外区域后关闭。
 4. 重复点击同一装备名称仍可关闭；点击另一装备名称可直接切换弹窗。
 
-- [ ] **Step 2: 移动端验证**
+- [x] **Step 2: 移动端验证**
 
 在 390×844 下重复已有装备与待购买的打开、外部点击关闭和内部操作，确认触控正常且无横向溢出。
 
-- [ ] **Step 3: 合规扫描与代码审查**
+- [x] **Step 3: 合规扫描与代码审查**
 
 确认只修改两个组件和相关测试；无新依赖、无新颜色、中文 UI 未变化、组件仍为默认导出。完成独立代码审查并修复 Critical/Important。
 
-- [ ] **Step 4: 更新记忆并刷新索引**
+- [x] **Step 4: 更新记忆并刷新索引**
 
 在 STATUS 记录浏览器和自动化 QA；在 Preferences 记录“弹出操作应支持点击页面其他位置关闭”。运行：
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { type User, getCurrentUser, logout as authLogout, loginOrRegister } from '../lib/auth';
 
 interface AuthContextType {
@@ -11,11 +11,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    setUser(getCurrentUser());
-  }, []);
+  const [user, setUser] = useState<User | null>(() => getCurrentUser());
 
   const login = useCallback((phone: string) => {
     const u = loginOrRegister(phone);

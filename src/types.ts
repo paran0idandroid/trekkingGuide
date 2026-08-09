@@ -82,6 +82,38 @@ export type GearCategory =
   | '保暖层' | '登山杖' | '头灯' | '炉头套锅' | '水袋水壶'
   | '防水袋' | '涉水鞋' | '雪套' | '防晒墨镜';
 
+export type GearInventoryStatus = 'owned' | 'wanted';
+
+export interface GearInventoryItem {
+  id: string;
+  name: string;
+  createdAt: string;
+  status: GearInventoryStatus;
+  systemSlug: GearSystemSlug | null;
+}
+
+export type GearSystemSlug =
+  | 'carry-storage'
+  | 'shelter'
+  | 'sleep'
+  | 'wear-movement'
+  | 'food-hydration'
+  | 'navigation-safety';
+
+export interface GearSystemItem {
+  name: string;
+  knowledgeId: string;
+  productCategories: GearCategory[];
+}
+
+export interface GearSystem {
+  slug: GearSystemSlug;
+  name: string;
+  summary: string;
+  representativeItems: string;
+  items: GearSystemItem[];
+}
+
 export type BudgetTier = 'entry' | 'mid' | 'premium';
 export type FitnessLevel = 'beginner' | 'intermediate' | 'experienced';
 export type GearPriority = 'lightest' | 'value' | 'durable';

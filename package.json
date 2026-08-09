@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node server/dev.mjs",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:gear-backend": "node --test scripts/gear-database.test.mjs scripts/gear-api.test.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.109.0",

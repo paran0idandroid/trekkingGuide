@@ -8,6 +8,8 @@
 
 **Tech Stack:** Node.js 26、内置 `node:sqlite`、Node HTTP、Vite 5 middleware、React 18、TypeScript 5、Node 内置测试。
 
+**Review hardening:** 独立审查后为整表 PUT 增加递增 `revision`；旧快照返回 409，避免多标签页静默覆盖。输入校验同时补充重复 ID 与严格 ISO 时间。
+
 ---
 
 ## 文件职责
@@ -31,7 +33,7 @@
 - Create: `scripts/gear-database.test.mjs`
 - Create: `server/gearDatabase.mjs`
 
-- [ ] **Step 1: 写数据库失败测试**
+- [x] **Step 1: 写数据库失败测试**
 
 测试使用真实临时 SQLite 文件，不 mock 数据库：
 
@@ -90,12 +92,12 @@ test('重复名称或非法状态不会覆盖原清单', async t => {
 });
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `node --test scripts/gear-database.test.mjs`  
 Expected: FAIL，提示找不到 `server/gearDatabase.mjs`。
 
-- [ ] **Step 3: 实现最小 SQLite 模块**
+- [x] **Step 3: 实现最小 SQLite 模块**
 
 `createGearDatabase(databasePath)` 返回：
 
@@ -109,7 +111,7 @@ Expected: FAIL，提示找不到 `server/gearDatabase.mjs`。
 
 使用 Node 内置 `DatabaseSync`，创建严格表 `gear_items`，字段为 `id`、`name`、`normalized_name`、`status`、`system_slug`、`created_at`。先完整验证和标准化数组，再执行 `BEGIN IMMEDIATE`、`DELETE`、逐条 `INSERT`、`COMMIT`；写入异常时 `ROLLBACK` 并重新抛出。`listItems()` 使用 `ORDER BY created_at DESC` 并映射为 camelCase。
 
-- [ ] **Step 4: 运行数据库测试**
+- [x] **Step 4: 运行数据库测试**
 
 Run: `node --test scripts/gear-database.test.mjs`  
 Expected: PASS。
@@ -120,7 +122,7 @@ Expected: PASS。
 - Create: `scripts/gear-api.test.mjs`
 - Create: `server/gearApi.mjs`
 
-- [ ] **Step 1: 写真实 HTTP 失败测试**
+- [x] **Step 1: 写真实 HTTP 失败测试**
 
 使用临时数据库和随机端口创建 Node HTTP server，测试：
 
@@ -144,12 +146,12 @@ assert.deepEqual(await saved.json(), { items: sampleItems });
 
 同时测试非法 JSON 和重复名称返回 400、未知 `/api/*` 返回 404、非 GET/PUT 返回 405、超过 1 MiB 返回 413，且失败请求不覆盖原数据。
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `node --test scripts/gear-api.test.mjs`  
 Expected: FAIL，提示找不到 `server/gearApi.mjs`。
 
-- [ ] **Step 3: 实现 API handler**
+- [x] **Step 3: 实现 API handler**
 
 导出：
 
@@ -163,7 +165,7 @@ export async function handleGearApi(request, response, database) {
 
 JSON 响应设置 `content-type: application/json; charset=utf-8`。数据库校验错误映射为 400；未知错误只在终端记录，浏览器收到通用中文 500，不返回堆栈。
 
-- [ ] **Step 4: 运行 API 与数据库测试**
+- [x] **Step 4: 运行 API 与数据库测试**
 
 Run: `node --test scripts/gear-database.test.mjs scripts/gear-api.test.mjs`  
 Expected: PASS。
@@ -176,7 +178,7 @@ Expected: PASS。
 - Modify: `.gitignore`
 - Test: `scripts/gear-api.test.mjs`
 
-- [ ] **Step 1: 增加启动契约失败测试**
+- [x] **Step 1: 增加启动契约失败测试**
 
 读取配置并断言：
 
@@ -188,12 +190,12 @@ assert.match(devServer, /localhost/);
 assert.match(devServer, /58514/);
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `node --test scripts/gear-api.test.mjs`  
 Expected: FAIL，启动脚本和配置尚不存在。
 
-- [ ] **Step 3: 创建统一启动入口**
+- [x] **Step 3: 创建统一启动入口**
 
 使用 `createViteServer({ server: { middlewareMode: true }, appType: 'spa' })`，HTTP handler 先调用 `handleGearApi()`，非 API 请求交给 `vite.middlewares`。数据库固定为 `.local-data/gear.sqlite`，监听 `localhost:58514`。监听错误时关闭数据库和 Vite 后退出；收到 `SIGINT` / `SIGTERM` 时依次关闭 HTTP、Vite、SQLite。
 
@@ -210,7 +212,7 @@ Expected: FAIL，启动脚本和配置尚不存在。
 
 `.gitignore` 增加 `.local-data/`。
 
-- [ ] **Step 4: 运行启动契约和后端测试**
+- [x] **Step 4: 运行启动契约和后端测试**
 
 Run: `npm run test:gear-backend`  
 Expected: 数据库与 API 测试全部 PASS。
@@ -224,7 +226,7 @@ Expected: 数据库与 API 测试全部 PASS。
 - Modify: `scripts/gear-inventory.test.mjs`
 - Modify: `scripts/gear-inventory-ui.test.mjs`
 
-- [ ] **Step 1: 将存储测试改为 fetch 契约**
+- [x] **Step 1: 将存储测试改为 fetch 契约**
 
 删除 IndexedDB/localStorage stub 测试，增加：
 
@@ -260,12 +262,12 @@ test('API 错误返回中文信息', async t => {
 
 UI 静态测试断言 `GearInventory` 无 `phone` props、`MyGearPage` 不读取 `useAuth`、存储服务无 `indexedDB`、`getItem` 或 `removeItem`。
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `node --test scripts/gear-inventory.test.mjs scripts/gear-inventory-ui.test.mjs`  
 Expected: FAIL，现有函数仍要求 owner 并使用 IndexedDB。
 
-- [ ] **Step 3: 替换前端存储实现**
+- [x] **Step 3: 替换前端存储实现**
 
 保留名称校验、分类和数组纯函数，新增：
 
@@ -289,7 +291,7 @@ export async function saveGearInventory(
 
 `parseGearResponse` 对非 2xx 抛出后端中文 `error`，并验证成功响应包含数组。`GearInventory` 删除 `phone` prop、`ownerRef` 和 owner 切换分支；加载调用 `getGearInventory()`，提交调用 `saveGearInventory(nextItems)`。`MyGearPage` 直接渲染 `<GearInventory />`。
 
-- [ ] **Step 4: 运行前端装备测试**
+- [x] **Step 4: 运行前端装备测试**
 
 Run: `node --test scripts/gear-inventory.test.mjs scripts/gear-inventory-ui.test.mjs`  
 Expected: PASS。
@@ -300,15 +302,15 @@ Expected: PASS。
 - Runtime only: `.local-data/gear.sqlite`（Git ignored）
 - No personal equipment names added to tracked files
 
-- [ ] **Step 1: 停止旧 Vite 进程并启动统一服务**
+- [x] **Step 1: 停止旧 Vite 进程并启动统一服务**
 
 只终止已确认属于当前项目且监听 58514 的进程，然后运行 `npm run dev`。Expected: 终端显示页面与 API 均位于 `http://localhost:58514`，并创建 `.local-data/gear.sqlite`。
 
-- [ ] **Step 2: 通过页面写入用户清单**
+- [x] **Step 2: 通过页面写入用户清单**
 
 使用当前会话中用户已授权的清单，通过 UI/API 写入 19 件已有装备和 25 件待购买装备。请求仅发送到本机 API，不创建包含个人清单的源码、fixture、日志文件或 seed 文件。
 
-- [ ] **Step 3: 直接核验 SQLite**
+- [x] **Step 3: 直接核验 SQLite**
 
 只读执行：
 
@@ -326,7 +328,7 @@ database.close();
 
 Expected: `owned = 19`、`wanted = 25`，总数 44。
 
-- [ ] **Step 4: 重启验证**
+- [x] **Step 4: 重启验证**
 
 关闭统一服务，确认 58514 不再监听；重新运行 `npm run dev` 并刷新 `/my-gear`。Expected: 页面仍显示“已有 19 · 待购买 25”，清单内容完整。
 
@@ -337,7 +339,7 @@ Expected: `owned = 19`、`wanted = 25`，总数 44。
 - Modify: `/Users/jon/Documents/Obliviate/20_Projects/justdemo/STATUS.md`
 - Modify: `/Users/jon/Documents/Obliviate/20_Projects/justdemo/OPEN_LOOPS.md`
 
-- [ ] **Step 1: 运行自动化验证**
+- [x] **Step 1: 运行自动化验证**
 
 ```bash
 node --test scripts/*.test.mjs
@@ -348,15 +350,15 @@ git diff --check
 
 Expected: Node 测试、Vite production build 和 diff check 通过；完整 TypeScript build 只允许项目既有的 `GearAdvisorModal` 与 `ImportMeta.env` 诊断，本次文件不得新增诊断。
 
-- [ ] **Step 2: 浏览器 QA**
+- [x] **Step 2: 浏览器 QA**
 
 在 1440×900 和 390×844 验证数量、内容、增删改、自动/手动分类、状态移动、中文错误、刷新与项目重启持久化；页面无横向溢出，触控目标保持至少 44px。
 
-- [ ] **Step 3: 合规扫描与独立审查**
+- [x] **Step 3: 合规扫描与独立审查**
 
 确认：无新增依赖；API 只监听 localhost；`.local-data/` 已忽略；个人清单未进入 tracked 文件；UI 仍只使用 forest/sand；没有修改无关业务代码。完成独立代码审查并修复全部 Critical/Important。
 
-- [ ] **Step 4: 记忆收尾**
+- [x] **Step 4: 记忆收尾**
 
 记录单机单用户、SQLite 文件、API 契约、QA 结果和不再使用 IndexedDB 的决策，然后运行：
 

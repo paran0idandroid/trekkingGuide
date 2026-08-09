@@ -12,6 +12,7 @@ export default function Nav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isLoggedIn, logout } = useAuth();
+  const useLightNav = scrolled || location.pathname.startsWith('/gear-knowledge') || location.pathname === '/my-gear';
 
   useEffect(() => {
     const onScroll = () => {
@@ -36,7 +37,8 @@ export default function Nav() {
 
   const pageLinks = [
     { label: '地图', href: '/', isActive: location.pathname === '/' },
-    { label: '装备知识', href: '/gear-knowledge', isActive: location.pathname === '/gear-knowledge' },
+    { label: '装备知识', href: '/gear-knowledge', isActive: location.pathname.startsWith('/gear-knowledge') },
+    { label: '我的装备', href: '/my-gear', isActive: location.pathname === '/my-gear' },
     { label: '收藏', href: '/favorites', isActive: location.pathname === '/favorites' },
   ];
 
@@ -48,7 +50,7 @@ export default function Nav() {
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled 
+          useLightNav
             ? 'bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm' 
             : 'bg-transparent'
         }`}
@@ -62,14 +64,14 @@ export default function Nav() {
                   onClick={() => navigate(link.href)}
                   className={`text-[13px] tracking-wider uppercase py-1.5 px-3 transition-all duration-200 active:scale-95 ${
                     link.isActive
-                        ? (scrolled ? 'text-forest-700 font-medium' : 'text-white font-medium')
-                        : (scrolled ? 'text-forest-500/75 hover:text-forest-700' : 'text-white/70 hover:text-white')
+                        ? (useLightNav ? 'text-forest-700 font-medium' : 'text-white font-medium')
+                        : (useLightNav ? 'text-forest-500/75 hover:text-forest-700' : 'text-white/70 hover:text-white')
                   }`}
                 >
                   {link.label}
                 </button>
                 {link.isActive && (
-                  <div className={`absolute -bottom-[1px] left-3 right-3 h-0.5 rounded-full transition-colors duration-500 ${scrolled ? 'bg-forest-500' : 'bg-white/70'}`} />
+                  <div className={`absolute -bottom-[1px] left-3 right-3 h-0.5 rounded-full transition-colors duration-500 ${useLightNav ? 'bg-forest-500' : 'bg-white/70'}`} />
                 )}
               </div>
             ))}
@@ -84,17 +86,17 @@ export default function Nav() {
               <a
                 key={item.href}
                 href={item.href}
-                className={`text-[13px] tracking-wider uppercase transition-all duration-200 active:scale-95 ${scrolled ? 'text-forest-500/75 hover:text-forest-700' : 'text-white/75 hover:text-white'}`}
+                className={`text-[13px] tracking-wider uppercase transition-all duration-200 active:scale-95 ${useLightNav ? 'text-forest-500/75 hover:text-forest-700' : 'text-white/75 hover:text-white'}`}
               >
                 {item.label}
               </a>
             ))}
               {isLoggedIn && (
-                <span className={`text-[13px] ml-1 ${scrolled ? 'text-forest-400' : 'text-white/50'}`}>{user?.phone}</span>
+                <span className={`text-[13px] ml-1 ${useLightNav ? 'text-forest-400' : 'text-white/50'}`}>{user?.phone}</span>
               )}
             <button
               onClick={() => (isLoggedIn ? logout() : navigate('/auth'))}
-              className={`text-[13px] tracking-wider uppercase transition-all duration-200 active:scale-95 flex items-center gap-1 ${scrolled ? 'text-forest-500/75 hover:text-forest-700' : 'text-white/75 hover:text-white'}`}
+              className={`text-[13px] tracking-wider uppercase transition-all duration-200 active:scale-95 flex items-center gap-1 ${useLightNav ? 'text-forest-500/75 hover:text-forest-700' : 'text-white/75 hover:text-white'}`}
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -105,7 +107,7 @@ export default function Nav() {
 
           {/* Mobile hamburger */}
           <button
-            className={`md:hidden p-2 transition-colors ${scrolled ? 'text-forest-500' : 'text-white/80'}`}
+            className={`md:hidden p-2 transition-colors ${useLightNav ? 'text-forest-500' : 'text-white/80'}`}
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="菜单"
           >
