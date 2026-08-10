@@ -15,7 +15,6 @@
 | 路由 | react-router-dom | 7.x |
 | 动画 | GSAP | 3.12 |
 | 3D | Three.js + @react-three/fiber + drei | 0.160 |
-| 图表 | ECharts + echarts-for-react | 6.1 |
 | 地图 | MapLibre GL JS + MapTiler Outdoor | 5.24 |
 | 本地服务 | Node.js HTTP + Vite middleware | Node 22.5+（需要 `node:sqlite`） |
 | 本地数据库 | SQLite（`node:sqlite`） | 随 Node 提供 |
@@ -63,22 +62,20 @@ justdemo/
 │   │   ├── GearInventory.tsx / GearInventorySystemCard.tsx
 │   │   ├── WantedGearList.tsx / GearItemActionPanel.tsx
 │   │   ├── GearDetailPanel.tsx
-│   │   ├── GearAdvisor.tsx / GearQuiz.tsx / GearResults.tsx
 │   │   ├── GearAnatomyViewer.tsx
 │   │   └── BackpackModel.tsx
 │   ├── data/                  # 数据层
 │   │   ├── routes.ts          # 路由注册表
 │   │   ├── routeData.ts       # 单条路线数据
+│   │   ├── mapStyle.ts        # 全国与详情地图共享 Outdoor 样式
 │   │   ├── gearCatalog.ts     # 产品数据库
 │   │   ├── gearSystems.ts     # 六大装备系统定义与查询
 │   │   ├── gearGuideData.ts   # 装备指南内容
 │   │   ├── gearKnowledge.ts   # 装备知识文章
 │   │   ├── gearAnatomyData.ts # 3D 解剖数据
 │   │   ├── regions.ts         # 区域定义
-│   │   ├── routeGeoData.ts    # 地理数据
-│   │   └── routeProfiles.ts   # 路线装备配置文件
+│   │   └── routeGeoData.ts    # 全国地图路线地点
 │   └── lib/                   # 业务逻辑
-│       ├── gearEngine.ts      # 装备推荐引擎
 │       ├── gearInventory.ts   # 清单纯函数与 API 客户端
 │       ├── gearSystemState.ts # 装备知识 URL 状态规则
 │       └── routeMapState.ts   # 地图状态与纯函数规则
@@ -100,7 +97,7 @@ justdemo/
 
 | 路径 | 页面 | 说明 |
 |------|------|------|
-| `/` | HomePage | 首页/乌孙古道详情 |
+| `/` | HomePage | 全国地图与路线卡片 |
 | `/region/:regionSlug` | RegionPage | 区域旅游区页面 |
 | `/route/:routeSlug` | RoutePage | 单条路线详情页 |
 | `/gear-knowledge` | GearKnowledgePage | 装备知识列表 |
@@ -109,22 +106,10 @@ justdemo/
 
 ## 核心模块
 
-### 装备推荐系统
-
-```
-GearAdvisor (状态编排)
-  ├── GearQuiz (5步11题问卷)
-  ├── gearEngine (推荐引擎，纯函数)
-  └── GearResults (推荐结果卡片)
-```
-
-- 纯前端规则引擎，无外部 API / AI 调用
-- 用户画像（身体数据、预算、偏好）× 路线环境配置 → 排序后的装备推荐
-- 产品库内置品牌旗舰店链接
-
 ### 数据层
 
 - `routeDataMap` 以 slug 为 key 的路线数据登记处
+- 当前只注册乌孙古道与哈巴西坡；不存在的路线不得进入地图、区域或装备配置
 - `gearCatalog` 按品类分组的品牌产品数据库
 - 路线、装备知识和产品数据为硬编码 TypeScript 模块
 - 个人装备是单机动态数据，只通过 `/api/gear` 访问 `.local-data/gear.sqlite`
@@ -161,11 +146,13 @@ RouteMapExperience（选中节点与移动端抽屉状态）
 ```
 
 - MapTiler Outdoor 提供等高线、山体阴影和户外道路底图，Key 由 `VITE_MAPTILER_API_KEY` 注入
+- 首页全国地图与路线详情共用 MapLibre Outdoor；全国尺度只显示路线地点和名称，点击直接进入详情
 - 路线轨迹和节点来自本地脱敏 GeoJSON，地图组件按路由动态加载
 - 乌孙古道使用单条连续轨迹；哈巴西坡使用三条按日分色的连续轨迹
 - 地图 source/layer ID 按 route slug 隔离，路线摘要、路径名称和节点内容由配置注入
 - 节点名称由 MapLibre Symbol 图层绘制：桌面显示全部，移动端优先显示核心节点
 - 选中节点使用深绿双环；聚焦位置按桌面浮层和移动端详情面板的可见区域偏移
+- 进入或切换路线详情时立即回到地图顶部；地图下方直接进入四卡路线概况，不重复显示摘要条
 - 路线图片和节点图片允许缺省；无图路线不会渲染空图片框或无效请求
 
 ## 样式体系
@@ -178,4 +165,4 @@ RouteMapExperience（选中节点与移动端抽屉状态）
 
 ---
 
-Last updated: 2026-08-09
+Last updated: 2026-08-10

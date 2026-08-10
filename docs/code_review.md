@@ -40,7 +40,7 @@
 
 - 不必要的 re-render（状态提升不够、props 传递过深）？
 - 大量列表是否有 key 属性？
-- 3D / 图表组件是否考虑了卸载清理（Three.js dispose、ECharts dispose）？
+- 3D / 地图组件是否考虑了卸载清理（Three.js dispose、MapLibre remove）？
 
 ## 审查流程
 

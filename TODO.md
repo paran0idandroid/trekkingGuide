@@ -3,14 +3,12 @@
 ## 近期
 
 - [ ] **路线数据补全**：在 `src/data/routeData.ts` 中扩展更多路线数据（雨崩、虎跳峡、贡嘎等）
-- [ ] **装备推荐引擎优化**：
-  - [ ] 完善产品库 `src/data/gearCatalog.ts`，补充更多品牌型号
-  - [ ] 引擎逻辑微调（`src/lib/gearEngine.ts`），加入更多筛选维度
+- [ ] **装备产品资料完善**：扩充 `src/data/gearCatalog.ts` 中的品牌型号与参数
 - [ ] **知识点页面扩容**：`src/data/gearKnowledge.ts` 丰富装备知识内容
 
 ## 中期
 
-- [ ] **国内路线首页**：HomePage 展示所有路线的概览视图
+- [x] **国内路线首页**：MapLibre Outdoor 全国地图展示已收录路线地点
 - [ ] **路线对比功能**：支持选择 2–3 条路线并列对比关键参数
 - [ ] **3D 装备查看器**：完善 GearAnatomyViewer 交互（Three.js）
 - [ ] **响应式打磨**：确保手机端浏览体验完整
@@ -30,4 +28,4 @@
 
 ---
 
-Last updated: 2026-08-09
+Last updated: 2026-08-10

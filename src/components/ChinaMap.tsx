@@ -1,216 +1,153 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import * as echarts from 'echarts/core';
-import { GeoComponent, TooltipComponent } from 'echarts/components';
-import { ScatterChart, LinesChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
+import maplibregl, { Map } from 'maplibre-gl';
+import type { FeatureCollection, Point } from 'geojson';
+import { mapTilerOutdoorStyleUrl } from '../data/mapStyle';
 import { routeGeoData } from '../data/routeGeoData';
 import { getRouteBySlug } from '../data/routes';
 
-echarts.use([GeoComponent, ScatterChart, LinesChart, TooltipComponent, CanvasRenderer]);
+const CHINA_BOUNDS: [[number, number], [number, number]] = [
+  [73.5, 18],
+  [135.2, 53.8],
+];
+const ROUTE_SOURCE_ID = 'china-route-points';
+const ROUTE_MARKER_LAYER_ID = 'china-route-markers';
+const ROUTE_LABEL_LAYER_ID = 'china-route-labels';
 
 export default function ChinaMap() {
-  const chartRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const [mapReady, setMapReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Load GeoJSON
   useEffect(() => {
-    fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
-      .then(r => r.json())
-      .then(geo => { echarts.registerMap('china', geo as any); setMapReady(true); })
-      .catch(() => {
-        fetch('https://cdn.jsdelivr.net/npm/echarts@5/map/json/china.json')
-          .then(r => r.json())
-          .then(geo => { echarts.registerMap('china', geo as any); setMapReady(true); })
-          .catch(() => setMapReady(false));
+    if (!containerRef.current) return;
+    if (!mapTilerOutdoorStyleUrl) {
+      setIsLoading(false);
+      setError('地图暂时无法显示，请配置 MapTiler API Key');
+      return;
+    }
+
+    const geoJson: FeatureCollection<Point> = {
+      type: 'FeatureCollection',
+      features: routeGeoData.map(routePoint => {
+        const route = getRouteBySlug(routePoint.slug);
+        if (!route) throw new Error(`不存在的路线：${routePoint.slug}`);
+        return {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: routePoint.coordinates },
+          properties: { slug: route.slug, name: route.name },
+        };
+      }),
+    };
+
+    let map: Map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: mapTilerOutdoorStyleUrl,
+        center: [104, 35],
+        zoom: 3,
+        minZoom: 2.5,
+        maxZoom: 9,
+        maxPitch: 0,
+        dragRotate: false,
+        touchPitch: false,
+        renderWorldCopies: false,
+        attributionControl: { compact: true },
       });
-  }, []);
+    } catch {
+      setIsLoading(false);
+      setError('地图初始化失败，请检查 MapTiler Key 和浏览器兼容性');
+      return;
+    }
 
-  // Init & render chart
-  useEffect(() => {
-    if (!mapReady || !chartRef.current) return;
-    let ec = echarts.getInstanceByDom(chartRef.current);
-    if (!ec) ec = echarts.init(chartRef.current);
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
-    // Build data
-    const tipMap: Record<string, any> = {};
-    const lineData: any[] = [];
-    const startMarkers: any[] = [];
-    const endMarkers: any[] = [];
+    let reportedMapError = false;
+    map.on('error', () => {
+      if (reportedMapError) return;
+      reportedMapError = true;
+      setIsLoading(false);
+      setError('地图底图加载失败，请检查 MapTiler Key 和网络连接');
+    });
 
-    Object.entries(routeGeoData).forEach(([slug, rd]) => {
-      const route = getRouteBySlug(slug);
-      tipMap[slug] = {
-        name: route?.name || slug,
-        desc: route?.subtitle || '',
-        diff: route?.overview.difficulty || '',
-        days: route?.overview.duration || '',
-        distance: route?.overview.distance || '',
-        season: route?.overview.bestSeason || '',
+    map.on('load', () => {
+      map.addSource(ROUTE_SOURCE_ID, { type: 'geojson', data: geoJson });
+      map.addLayer({
+        id: ROUTE_MARKER_LAYER_ID,
+        type: 'circle',
+        source: ROUTE_SOURCE_ID,
+        paint: {
+          'circle-radius': 8,
+          'circle-color': '#1a4d3e',
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 3,
+        },
+      });
+      map.addLayer({
+        id: ROUTE_LABEL_LAYER_ID,
+        type: 'symbol',
+        source: ROUTE_SOURCE_ID,
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-size': 13,
+          'text-font': ['Noto Sans Regular'],
+          'text-offset': [1.1, 0],
+          'text-anchor': 'left',
+          'text-padding': 8,
+        },
+        paint: {
+          'text-color': '#1a4d3e',
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.5,
+        },
+      });
+
+      const openRoute = (event: maplibregl.MapLayerMouseEvent) => {
+        const slug = event.features?.[0]?.properties?.slug;
+        if (typeof slug === 'string') navigate(`/route/${slug}`);
       };
-
-      const color = rd.color || '#6fad85';
-
-      // Route line with hover data
-      lineData.push({
-        coords: rd.linePoints,
-        slug,
-        lineStyle: { color, width: 3, curveness: 0.15 },
+      [ROUTE_MARKER_LAYER_ID, ROUTE_LABEL_LAYER_ID].forEach(layerId => {
+        map.on('click', layerId, openRoute);
+        map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
       });
 
-      // Start marker
-      startMarkers.push({
-        value: rd.markerPoint,
-        slug,
-        name: route?.name,
-        itemStyle: { color: '#fff', borderColor: color, borderWidth: 3 },
-        symbol: 'circle',
-        symbolSize: 14,
+      map.fitBounds(CHINA_BOUNDS, {
+        padding: window.innerWidth < 640 ? 24 : 48,
+        duration: 0,
       });
-
-      // End marker (last waypoint or a slight offset)
-      const lastWp = rd.waypoints[rd.waypoints.length - 1];
-      if (lastWp) {
-        endMarkers.push({
-          value: lastWp.coords,
-          slug,
-          itemStyle: { color },
-          symbol: 'diamond',
-          symbolSize: 10,
-        });
-      }
+      setError('');
+      setIsLoading(false);
     });
 
-    const series: any[] = [];
+    const resizeObserver = new ResizeObserver(() => map.resize());
+    resizeObserver.observe(containerRef.current);
 
-    // Route lines with hover emphasis
-    series.push({
-      type: 'lines', coordinateSystem: 'geo',
-      data: lineData, polyline: true,
-      lineStyle: { width: 3, curveness: 0.15, opacity: 0.7 },
-      emphasis: {
-        scale: true,
-        lineStyle: { width: 5, opacity: 1 },
-      },
-      z: 2,
-    });
-
-    // Start markers with hover emphasis
-    series.push({
-      type: 'scatter', coordinateSystem: 'geo',
-      data: startMarkers,
-      z: 4,
-      label: {
-        show: true,
-        position: 'right',
-        distance: 8,
-        color: '#1a4d3e',
-        fontSize: 12,
-        fontWeight: 500,
-        formatter: (p: any) => p?.data?.name || '',
-      },
-      emphasis: {
-        scale: 1.5,
-        itemStyle: {
-          borderWidth: 4,
-        },
-      },
-    });
-
-    // End markers
-    series.push({
-      type: 'scatter', coordinateSystem: 'geo',
-      data: endMarkers,
-      z: 3,
-    });
-
-    const option: any = {
-      backgroundColor: 'transparent',
-      geo: {
-        map: 'china', roam: false, zoom: 1.08, center: [104, 35],
-        label: { show: false },
-        itemStyle: {
-          areaColor: '#f0f4f2',
-          borderColor: '#d4dbd7',
-          borderWidth: 1,
-        },
-        emphasis: {
-          itemStyle: {
-            areaColor: '#e0e8e4',
-            borderColor: '#6fad85',
-            borderWidth: 1.5,
-          },
-        },
-        z: 0,
-      },
-      series,
-      tooltip: {
-        trigger: 'item',
-        backgroundColor: '#fff',
-        borderColor: '#e5e7eb',
-        borderWidth: 1,
-        padding: [14, 18],
-        textStyle: { color: '#333', fontSize: 12 },
-        formatter: (p: any) => {
-          const slug = p?.data?.slug;
-          if (!slug || !tipMap[slug]) return '';
-          const d = tipMap[slug];
-          const lines: string[] = [];
-          lines.push(`<div style="font-size:15px;font-weight:600;color:#1a4d3e;margin-bottom:3px">${d.name}</div>`);
-          if (d.desc) lines.push(`<div style="font-size:11px;color:#6b7280;margin-bottom:6px">${d.desc}</div>`);
-          const tags: string[] = [];
-          if (d.distance) tags.push(`<span style="color:#9ca3af">距离</span> <span style="color:#374151;font-weight:500">${d.distance}</span>`);
-          if (d.days) tags.push(`<span style="color:#9ca3af">天数</span> <span style="color:#374151;font-weight:500">${d.days}</span>`);
-          if (d.diff) tags.push(`<span style="color:#9ca3af">难度</span> <span style="color:#374151;font-weight:500">${d.diff}</span>`);
-          if (d.season) tags.push(`<span style="color:#9ca3af">最佳</span> <span style="color:#374151;font-weight:500">${d.season}</span>`);
-          if (tags.length) lines.push(`<div style="display:flex;gap:12px;font-size:11px;margin-bottom:4px">${tags.join('<span style="color:#d1d5db">|</span>')}</div>`);
-          lines.push(`<div style="color:#6fad85;font-size:10px;margin-top:6px">点击查看路线详情 →</div>`);
-          return lines.join('\n');
-        },
-      },
-    };
-
-    ec.setOption(option, true);
-    ec.off('click');
-    ec.on('click', (params: any) => {
-      const slug = params?.data?.slug;
-      if (slug) navigate(`/route/${slug}`);
-    });
-
-    const onResize = () => ec?.resize();
-    window.addEventListener('resize', onResize);
     return () => {
-      window.removeEventListener('resize', onResize);
-      ec?.dispose();
+      resizeObserver.disconnect();
+      map.remove();
     };
-  }, [mapReady, navigate]);
+  }, [navigate]);
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto px-4">
-      <div className="relative overflow-hidden rounded-xl border border-gray-100 bg-forest-50/10" style={{ aspectRatio: '700/500' }}>
-        {/* ECharts canvas */}
-        <div ref={chartRef} className="w-full h-full" />
+    <div className="relative mx-auto w-full max-w-6xl px-4">
+      <div className="relative h-[420px] overflow-hidden rounded-2xl border border-forest-100 bg-forest-50 md:h-[620px]">
+        <div ref={containerRef} className="absolute inset-0" aria-label="中国徒步路线地图" />
 
-        {/* Legend */}
-        <div className="absolute bottom-4 right-4 pointer-events-none">
-          <div className="flex flex-col gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-3.5 py-2.5 border border-gray-100 shadow-sm">
-            {Object.entries(routeGeoData).map(([slug, rd]) => (
-              <div key={slug} className="flex items-center gap-2.5">
-                <div className="w-8 h-[3px] rounded-full" style={{ background: rd.color }} />
-                <span className="text-xs text-forest-700">{getRouteBySlug(slug)?.name || slug}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Loading */}
-        {!mapReady && (
-          <div className="absolute inset-0 flex items-center justify-center bg-forest-50/30 z-10">
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-forest-50">
             <div className="text-center">
-              <div className="w-7 h-7 border-2 border-forest-300/40 border-t-forest-500 rounded-full animate-spin mx-auto mb-2.5" />
-              <p className="text-forest-400 text-xs">加载中国地图...</p>
+              <div className="mx-auto mb-2.5 h-7 w-7 animate-spin rounded-full border-2 border-forest-300/40 border-t-forest-500" />
+              <p className="text-xs text-forest-600">正在加载中国地图</p>
             </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-forest-50 px-6 text-center">
+            <p className="max-w-sm text-sm text-forest-700" role="alert">{error}</p>
           </div>
         )}
       </div>

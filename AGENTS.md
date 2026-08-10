@@ -2,7 +2,7 @@
 
 ## 技术栈
 
-Vite 5 · React 18 · TypeScript 5 (strict) · Tailwind CSS 3.4 · react-router-dom v7 · GSAP 3.12 · Three.js 0.160 + @react-three/fiber + drei · ECharts 6.1 · Node.js 本地 API · SQLite。路线与知识页面仍可作为静态 SPA 构建；`/my-gear` 的持久化依赖本机 Node 服务。
+Vite 5 · React 18 · TypeScript 5 (strict) · Tailwind CSS 3.4 · react-router-dom v7 · GSAP 3.12 · Three.js 0.160 + @react-three/fiber + drei · MapLibre GL JS 5.24 · Node.js 本地 API · SQLite。项目按本地单用户运行；`/my-gear` 的持久化依赖本机 Node 服务。
 
 ## 文件结构
 
@@ -162,7 +162,7 @@ Phase 7 ── Memory Closeout（必做）
 按修改频率排列：
 
 1. **data/ 目录**（gearKnowledge.ts · gearCatalog.ts · gearAnatomyData.ts · routes.ts · routeData.ts）— 新增内容
-2. **components/ 目录**（GearQuiz.tsx · GearAdvisorModal.tsx · GearDetailPanel.tsx）— 新功能
+2. **components/ 目录**（GearAdvisorModal.tsx · GearDetailPanel.tsx）— 新功能
 3. **pages/ 目录** — 路由集成
 4. **index.css** — 视觉打磨
 5. **tailwind.config.js** — 色板调整
@@ -197,4 +197,4 @@ Phase 7 ── Memory Closeout（必做）
 
 ---
 
-Last updated: 2026-08-09
+Last updated: 2026-08-10
