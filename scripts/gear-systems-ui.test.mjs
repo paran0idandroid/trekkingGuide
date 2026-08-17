@@ -58,3 +58,64 @@ test('装备详情路由保持顶部装备知识导航激活', async () => {
   assert.match(nav, /pathname\.startsWith\('\/gear-knowledge'\)/);
   assert.match(nav, /const useLightNav = scrolled \|\| location\.pathname\.startsWith\('\/gear-knowledge'\)/);
 });
+
+test('装备知识首页与系统详情共享环境背景和选择性玻璃层级', async () => {
+  const [knowledgePage, systemPage, systemCard] = await Promise.all([
+    readFile(new URL('src/pages/GearKnowledgePage.tsx', root), 'utf8'),
+    readFile(new URL('src/pages/GearSystemPage.tsx', root), 'utf8'),
+    readFile(new URL('src/components/GearSystemCard.tsx', root), 'utf8'),
+  ]);
+
+  assert.match(knowledgePage, /gear-page-environment/);
+  assert.match(knowledgePage, /gear-glass-module/);
+  assert.match(knowledgePage, /gear-glass-primary/);
+  assert.match(systemCard, /gear-glass-module/);
+  assert.match(systemCard, /gear-pressable/);
+
+  assert.match(systemPage, /gear-page-environment/);
+  assert.match(systemPage, /gear-glass-chip/);
+  assert.match(systemPage, /gear-glass-module/);
+  assert.match(systemPage, /gear-glass-segment/);
+  assert.match(systemPage, /gear-tab-indicator/);
+  assert.match(systemPage, /gear-glass-action/);
+  assert.match(systemPage, /gear-pressable/);
+  assert.match(systemPage, /gear-glass-module[^\"]*md:sticky/);
+  assert.doesNotMatch(systemPage, /gear-glass-module sticky/);
+});
+
+test('装备顾问统一为浅色玻璃且保留四步问答逻辑', async () => {
+  const advisor = await readFile(new URL('src/components/GearAdvisorModal.tsx', root), 'utf8');
+
+  assert.match(advisor, /gear-glass-panel/);
+  assert.match(advisor, /gear-glass-action/);
+  assert.match(advisor, /gear-glass-primary/);
+  assert.match(advisor, /gear-pressable/);
+  assert.match(advisor, /bg-forest-900\/30/);
+  assert.match(advisor, /role="dialog"/);
+  assert.match(advisor, /aria-modal="true"/);
+  assert.equal((advisor.match(/question: '/g) ?? []).length, 4);
+  assert.match(advisor, /step < steps\.length - 1/);
+  assert.match(advisor, /setShowResult\(true\)/);
+  assert.match(advisor, /handleRestart/);
+  assert.match(advisor, /setStep\(0\)/);
+  assert.match(advisor, /setAnswers\(\{\}\)/);
+  assert.match(advisor, /event\.key === 'Escape'/);
+  assert.match(advisor, /event\.key !== 'Tab'/);
+  assert.match(advisor, /previousFocus\?\.focus\(\)/);
+  assert.match(advisor, /dialogRef\.current\?\.querySelector/);
+  assert.doesNotMatch(advisor, /bg-black\/80|liquid-glass(?:-btn)?\b|text-white\/|bg-white\/|cyan-|amber-|rose-/);
+});
+
+test('装备知识玻璃体验保留键盘与辅助显示模式', async () => {
+  const [systemPage, styles] = await Promise.all([
+    readFile(new URL('src/pages/GearSystemPage.tsx', root), 'utf8'),
+    readFile(new URL('src/index.css', root), 'utf8'),
+  ]);
+
+  assert.match(systemPage, /min-h-11/);
+  assert.match(systemPage, /onKeyDown=\{event => handleTabKeyDown/);
+  assert.match(systemPage, /focus-visible:ring/);
+  assert.match(styles, /prefers-reduced-motion: reduce/);
+  assert.match(styles, /prefers-reduced-transparency: reduce/);
+  assert.match(styles, /prefers-contrast: more/);
+});

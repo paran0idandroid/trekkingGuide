@@ -69,6 +69,7 @@ export default function GearSystemPage() {
 
   const products = selectedSystemItem.productCategories.flatMap(category => getProductsByCategory(category));
   const selectedKnowledgeId = selectedSystemItem.knowledgeId;
+  const selectedTabIndex = tabs.findIndex(tab => tab.id === selectedTab);
   const routeSlug = location.state?.routeSlug as string | undefined;
 
   function updateGear(knowledgeId: string) {
@@ -92,12 +93,14 @@ export default function GearSystemPage() {
     if (nextIndex === undefined) return;
 
     event.preventDefault();
-    updateTab(tabs[nextIndex].id);
+    const nextTab = tabs[nextIndex];
+    if (!nextTab) return;
+    updateTab(nextTab.id);
     requestAnimationFrame(() => tabRefs.current[nextIndex]?.focus());
   }
 
   return (
-    <div className="min-h-screen py-20 md:py-24">
+    <div className="gear-page-environment min-h-screen py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <nav className="mb-7 flex items-center gap-2 text-xs text-forest-500" aria-label="面包屑">
           <Link to="/gear-knowledge" state={routeSlug ? { routeSlug } : undefined} className="hover:text-forest-700">
@@ -108,7 +111,9 @@ export default function GearSystemPage() {
         </nav>
 
         <header className="flex max-w-3xl items-center gap-5 md:gap-7">
-          <GearSystemIcon system={system.slug} className="h-24 w-24 shrink-0 md:h-32 md:w-32" />
+          <span className="gear-glass-chip grid h-24 w-24 shrink-0 place-items-center rounded-3xl md:h-32 md:w-32">
+            <GearSystemIcon system={system.slug} className="h-20 w-20 md:h-28 md:w-28" />
+          </span>
           <div>
             <p className="text-xs uppercase tracking-wider text-forest-500">装备系统</p>
             <h1 className="mt-2 font-display text-2xl font-bold text-forest-800 md:text-4xl">{system.name}</h1>
@@ -116,9 +121,9 @@ export default function GearSystemPage() {
           </div>
         </header>
 
-        <div className="mt-9 border-t border-sand-100 pt-7 md:mt-12 md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:pt-10">
-          <aside className="sticky top-16 z-20 -mx-5 border-y border-sand-100 bg-white px-5 py-3 md:top-24 md:mx-0 md:self-start md:border-0 md:bg-transparent md:p-0">
-            <p className="mb-3 hidden text-xs font-medium uppercase tracking-wider text-forest-500 md:block">系统装备</p>
+        <div className="mt-9 border-t border-sand-100/70 pt-7 md:mt-12 md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:pt-10">
+          <aside className="gear-glass-module -mx-1 rounded-2xl p-2 md:sticky md:top-24 md:z-20 md:mx-0 md:self-start md:p-3">
+            <p className="mb-2 hidden px-2 text-xs font-medium uppercase tracking-wider text-forest-500 md:block">系统装备</p>
             <div className="flex gap-2 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0">
               {system.items.map(item => {
                 const active = item.knowledgeId === selectedSystemItem.knowledgeId;
@@ -127,10 +132,10 @@ export default function GearSystemPage() {
                     key={item.knowledgeId}
                     onClick={() => updateGear(item.knowledgeId)}
                     aria-current={active ? 'true' : undefined}
-                    className={`relative shrink-0 rounded-xl px-4 py-2.5 text-left text-sm transition-colors md:w-full md:py-3 ${
+                    className={`gear-glass-item gear-pressable relative min-h-11 shrink-0 rounded-xl px-4 text-left text-sm md:w-full ${
                       active
-                        ? 'bg-sand-100 text-forest-800 md:before:absolute md:before:inset-y-2 md:before:left-0 md:before:w-0.5 md:before:bg-forest-500'
-                        : 'text-forest-500 hover:bg-sand-50 hover:text-forest-700'
+                        ? 'border-forest-100 bg-forest-50/70 font-medium text-forest-800 shadow-sm'
+                        : 'text-forest-600 hover:text-forest-800'
                     }`}
                   >
                     {item.name}
@@ -148,7 +153,7 @@ export default function GearSystemPage() {
                 {knowledge.id === 'backpack' && (
                   <button
                     onClick={() => setShowAnatomy(true)}
-                    className="rounded-full border border-forest-200 px-4 py-2 text-xs font-medium text-forest-700 transition-colors hover:bg-forest-50"
+                    className="gear-glass-action gear-pressable min-h-11 rounded-full px-4 text-xs font-medium text-forest-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-300"
                   >
                     查看 3D 结构
                   </button>
@@ -157,7 +162,12 @@ export default function GearSystemPage() {
               <p className="mt-2 text-sm leading-6 text-forest-600">{knowledge.summary}</p>
             </div>
 
-            <div className="mt-5 flex gap-7 overflow-x-auto border-b border-sand-100" role="tablist" aria-label={`${selectedSystemItem.name}内容`}>
+            <div className="gear-glass-segment relative mt-5 grid grid-cols-3 rounded-2xl p-1" role="tablist" aria-label={`${selectedSystemItem.name}内容`}>
+              <span
+                aria-hidden="true"
+                className="gear-tab-indicator absolute bottom-1 left-1 top-1 w-[calc((100%_-_0.5rem)/3)] rounded-xl"
+                style={{ transform: `translateX(${selectedTabIndex * 100}%)` }}
+              />
               {tabs.map((tab, index) => (
                 <button
                   key={tab.id}
@@ -169,10 +179,10 @@ export default function GearSystemPage() {
                   tabIndex={selectedTab === tab.id ? 0 : -1}
                   onClick={() => updateTab(tab.id)}
                   onKeyDown={event => handleTabKeyDown(event, index)}
-                  className={`shrink-0 border-b-2 px-1 pb-3 text-sm font-medium transition-colors ${
+                  className={`gear-pressable relative z-10 min-h-11 rounded-xl px-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-300 ${
                     selectedTab === tab.id
-                      ? 'border-forest-500 text-forest-800'
-                      : 'border-transparent text-forest-500 hover:text-forest-700'
+                      ? 'text-forest-800'
+                      : 'text-forest-600 hover:text-forest-800'
                   }`}
                 >
                   {tab.label}
@@ -197,7 +207,7 @@ export default function GearSystemPage() {
                     <h3 className="text-lg font-semibold text-forest-800">适用场景</h3>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {knowledge.scenarios.map(scenario => (
-                        <span key={scenario} className="rounded-full bg-forest-50 px-3 py-1.5 text-xs text-forest-700">
+                        <span key={scenario} className="gear-glass-chip rounded-full px-3 py-1.5 text-xs text-forest-700">
                           {scenario}
                         </span>
                       ))}
@@ -207,7 +217,7 @@ export default function GearSystemPage() {
                     <h3 className="text-lg font-semibold text-forest-800">核心知识</h3>
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       {knowledge.nodes.map(node => (
-                        <article key={node.id} className="rounded-2xl border border-sand-100 bg-sand-50 p-4">
+                        <article key={node.id} className="gear-glass-module rounded-2xl p-4">
                           <h4 className="text-sm font-semibold text-forest-800">{node.label}</h4>
                           <p className="mt-2 text-xs leading-6 text-forest-600">{node.content}</p>
                         </article>
@@ -298,16 +308,16 @@ interface SelectionGroupProps {
 
 function SelectionGroup({ title, expanded, onToggle, children }: SelectionGroupProps) {
   return (
-    <section className="rounded-2xl border border-sand-100">
+    <section className="gear-glass-module rounded-2xl">
       <button
         onClick={onToggle}
         aria-expanded={expanded}
-        className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-semibold text-forest-800"
+        className="gear-pressable flex min-h-11 w-full items-center justify-between rounded-2xl px-5 py-4 text-left text-sm font-semibold text-forest-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-300"
       >
         {title}
         <span className={`text-sand-700 transition-transform ${expanded ? 'rotate-45' : ''}`}>＋</span>
       </button>
-      {expanded && <div className="border-t border-sand-100 px-5 py-5">{children}</div>}
+      {expanded && <div className="border-t border-sand-100/70 px-5 py-5">{children}</div>}
     </section>
   );
 }
@@ -315,7 +325,7 @@ function SelectionGroup({ title, expanded, onToggle, children }: SelectionGroupP
 function ProductReference({ products }: { products: GearProduct[] }) {
   if (products.length === 0) {
     return (
-      <div className="rounded-2xl bg-sand-50 p-6 text-sm leading-6 text-forest-600">
+      <div className="gear-glass-module rounded-2xl p-6 text-sm leading-6 text-forest-600">
         这类装备当前先提供基础知识和选购方法，产品资料将在完成核验后补充。
       </div>
     );
@@ -339,7 +349,7 @@ function ProductReference({ products }: { products: GearProduct[] }) {
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
               {tierProducts.map(product => (
-                <article key={product.id} className="rounded-2xl border border-sand-100 p-5">
+                <article key={product.id} className="gear-glass-module rounded-2xl p-5">
                   <p className="text-xs text-forest-500">{product.category}</p>
                   <h4 className="mt-1 text-base font-semibold text-forest-800">
                     {product.brandZh} {product.model}
@@ -353,7 +363,7 @@ function ProductReference({ products }: { products: GearProduct[] }) {
                       href={product.links.taobao}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-full border border-forest-200 px-3 py-1.5 text-xs text-forest-700 hover:bg-forest-50"
+                      className="gear-glass-action gear-pressable inline-flex min-h-11 items-center rounded-full px-3 text-xs text-forest-700"
                     >
                       淘宝搜索
                     </a>
@@ -361,7 +371,7 @@ function ProductReference({ products }: { products: GearProduct[] }) {
                       href={product.links.jd}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-full border border-forest-200 px-3 py-1.5 text-xs text-forest-700 hover:bg-forest-50"
+                      className="gear-glass-action gear-pressable inline-flex min-h-11 items-center rounded-full px-3 text-xs text-forest-700"
                     >
                       京东搜索
                     </a>

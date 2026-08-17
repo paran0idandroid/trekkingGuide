@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { KeyboardEvent } from 'react';
 
 interface Props {
   onClose: () => void;
@@ -119,12 +120,12 @@ function getLoadEmoji(l: string): string {
 }
 
 export default function GearAdvisorModal({ onClose }: Props) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResult, setShowResult] = useState(false);
 
-  const current = steps[step];
-  const selected = answers[current?.field] || '';
+  const current = steps[step]!;
 
   const handleSelect = (value: string) => {
     const newAnswers = { ...answers, [current.field]: value };
@@ -133,13 +134,50 @@ export default function GearAdvisorModal({ onClose }: Props) {
     if (step < steps.length - 1) {
       setStep(s => s + 1);
     } else {
-      // Last step - show result
+      // 最后一步完成后显示建议
       setAnswers(newAnswers);
       setShowResult(true);
     }
   };
 
-  const result = showResult ? getResult(answers) : null;
+  const result = getResult(answers);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLElement>('button')?.focus());
+
+    return () => previousFocus?.focus();
+  }, []);
+
+  useEffect(() => {
+    requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLElement>('button')?.focus());
+  }, [showResult, step]);
+
+  function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = Array.from(
+      dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled])') ?? [],
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!first || !last) return;
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   const handleRestart = () => {
     setStep(0);
@@ -149,38 +187,42 @@ export default function GearAdvisorModal({ onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="gear-scrim fixed inset-0 bg-forest-900/30 backdrop-blur-sm" />
 
       <div
-        className="relative z-10 w-full max-w-lg"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={showResult ? '你的装备建议' : '装备顾问'}
+        onKeyDown={handleDialogKeyDown}
+        className="gear-glass-panel gear-sheet-enter relative z-10 max-h-[calc(100svh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl p-6 md:p-8"
         onClick={e => e.stopPropagation()}
       >
-        <div className="liquid-glass rounded-2xl p-6 md:p-8">
           {!showResult ? (
             <>
-              {/* Progress bar */}
-              <div className="flex gap-1.5 mb-5">
+              {/* 进度 */}
+              <div className="mb-5 flex gap-1.5">
                 {steps.map((_, i) => (
                   <div
                     key={i}
                     className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                      i <= step ? 'bg-cyan-400/50' : 'bg-white/10'
+                      i <= step ? 'bg-forest-500' : 'bg-forest-100'
                     }`}
                   />
                 ))}
               </div>
 
-              {/* Question */}
-              <h3 className="text-lg font-semibold text-white/90 mb-1">{current.question}</h3>
-              <p className="text-xs text-white/30 mb-5">第 {step + 1} / {steps.length} 步</p>
+              {/* 问题 */}
+              <h3 className="mb-1 text-lg font-semibold text-forest-800">{current.question}</h3>
+              <p className="mb-5 text-xs text-forest-600">第 {step + 1} / {steps.length} 步</p>
 
-              {/* Options */}
+              {/* 选项 */}
               <div className="space-y-2">
                 {current.options.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => handleSelect(opt.value)}
-                    className="w-full text-left liquid-glass-btn !py-3 !px-4 !rounded-xl text-sm text-white/70 hover:text-white transition-all"
+                    className="gear-glass-action gear-pressable min-h-11 w-full rounded-xl px-4 py-3 text-left text-sm text-forest-700 hover:text-forest-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-300"
                   >
                     {opt.label}
                   </button>
@@ -189,17 +231,17 @@ export default function GearAdvisorModal({ onClose }: Props) {
             </>
           ) : (
             <>
-              {/* Result */}
-              <div className="flex items-start justify-between mb-5">
+              {/* 建议结果 */}
+              <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-white/90 mb-1">你的装备建议</h3>
-                  <p className="text-xs text-white/30">
+                  <h3 className="mb-1 text-lg font-semibold text-forest-800">你的装备建议</h3>
+                  <p className="text-xs leading-5 text-forest-600">
                     {getDayEmoji(answers.days)} {steps[0].options.find(o => o.value === answers.days)?.label} &middot;
                     {getLoadEmoji(answers.load)} {steps[2].options.find(o => o.value === answers.load)?.label} &middot;
                     {getSeasonEmoji(answers.season)} {steps[3].options.find(o => o.value === answers.season)?.label}
                   </p>
                 </div>
-                <button onClick={onClose} className="liquid-glass-btn !p-1.5 !rounded-full text-white/40 hover:text-white/70">
+                <button onClick={onClose} aria-label="关闭装备顾问" className="gear-glass-action gear-pressable grid min-h-11 min-w-11 shrink-0 place-items-center rounded-full text-forest-600 hover:text-forest-800">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -207,79 +249,78 @@ export default function GearAdvisorModal({ onClose }: Props) {
               </div>
 
               <div className="space-y-4">
-                {/* Key specs */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-white/60">建议背包</span>
-                    <span className="text-white/80 font-medium">{result.backpackVol}</span>
+                {/* 核心规格 */}
+                <div className="gear-glass-module space-y-2 rounded-2xl p-4">
+                  <div className="flex justify-between gap-4 text-sm">
+                    <span className="text-forest-600">建议背包</span>
+                    <span className="text-right font-medium text-forest-800">{result.backpackVol}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-white/60">建议鞋类</span>
-                    <span className="text-white/80 font-medium">{result.shoeType}</span>
+                  <div className="flex justify-between gap-4 text-sm">
+                    <span className="text-forest-600">建议鞋类</span>
+                    <span className="text-right font-medium text-forest-800">{result.shoeType}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-white/60">建议睡袋</span>
-                    <span className="text-white/80 font-medium">{result.bagTemp}</span>
+                  <div className="flex justify-between gap-4 text-sm">
+                    <span className="text-forest-600">建议睡袋</span>
+                    <span className="text-right font-medium text-forest-800">{result.bagTemp}</span>
                   </div>
                 </div>
 
-                {/* Key points */}
+                {/* 重点关注 */}
                 <div className="pt-2">
-                  <h4 className="text-[11px] text-white/40 tracking-wider uppercase mb-2">重点关注</h4>
+                  <h4 className="mb-2 text-[11px] uppercase tracking-wider text-forest-600">重点关注</h4>
                   <div className="space-y-1.5">
                     {result.keyPoints.map((p, i) => (
                       <div key={i} className="flex gap-2 text-sm">
-                        <span className="text-cyan-400/60 flex-shrink-0 mt-0.5">•</span>
-                        <span className="text-white/55">{p}</span>
+                        <span className="mt-0.5 shrink-0 text-forest-500">•</span>
+                        <span className="text-forest-700">{p}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Don't overthink */}
+                {/* 不必过度关注 */}
                 <div>
-                  <h4 className="text-[11px] text-white/40 tracking-wider uppercase mb-2">不必过度关注</h4>
+                  <h4 className="mb-2 text-[11px] uppercase tracking-wider text-forest-600">不必过度关注</h4>
                   <div className="space-y-1">
                     {result.dontOverthink.map((p, i) => (
                       <div key={i} className="flex gap-2 text-sm">
-                        <span className="text-amber-400/50 flex-shrink-0 mt-0.5">—</span>
-                        <span className="text-white/40">{p}</span>
+                        <span className="mt-0.5 shrink-0 text-sand-700">—</span>
+                        <span className="text-forest-600">{p}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Mistakes */}
+                {/* 避坑提醒 */}
                 <div>
-                  <h4 className="text-[11px] text-white/40 tracking-wider uppercase mb-2">避坑提醒</h4>
+                  <h4 className="mb-2 text-[11px] uppercase tracking-wider text-sand-800">避坑提醒</h4>
                   <div className="space-y-1">
                     {result.mistakes.map((p, i) => (
                       <div key={i} className="flex gap-2 text-sm">
-                        <span className="text-rose-400/60 flex-shrink-0 mt-0.5">✕</span>
-                        <span className="text-white/50">{p}</span>
+                        <span className="mt-0.5 shrink-0 text-sand-800">×</span>
+                        <span className="text-forest-700">{p}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-6 pt-4 border-t border-white/[0.06]">
+              <div className="mt-6 flex gap-2 border-t border-forest-100 pt-4">
                 <button
                   onClick={handleRestart}
-                  className="liquid-glass-btn !px-4 !py-2 !rounded-full text-xs text-white/50 hover:text-white/80"
+                  className="gear-glass-action gear-pressable min-h-11 rounded-full px-4 text-xs text-forest-700"
                 >
                   重新判断
                 </button>
                 <button
                   onClick={onClose}
-                  className="liquid-glass-btn !px-4 !py-2 !rounded-full text-xs text-white/70 hover:text-white flex-1"
+                  className="gear-glass-primary gear-pressable min-h-11 flex-1 rounded-full px-4 text-xs font-medium text-white"
                 >
                   知道了
                 </button>
               </div>
             </>
           )}
-        </div>
       </div>
     </div>
   );

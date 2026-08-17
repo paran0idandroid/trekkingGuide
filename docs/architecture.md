@@ -59,6 +59,7 @@ justdemo/
 │   │   ├── RouteMobileSheet.tsx
 │   │   ├── Footer.tsx
 │   │   ├── Gear.tsx / GearSystemCard.tsx / GearSystemIcon.tsx
+│   │   ├── GearAdvisorModal.tsx
 │   │   ├── GearInventory.tsx / GearInventorySystemCard.tsx
 │   │   ├── WantedGearList.tsx / GearItemActionPanel.tsx
 │   │   ├── GearDetailPanel.tsx
@@ -161,8 +162,9 @@ RouteMapExperience（选中节点与移动端抽屉状态）
 - **字体**：正文使用 Satoshi + Noto Sans SC 回退；h1–h3 使用 Nohemi + Noto Sans SC 回退
 - **动画**：GSAP（已安装 skill），组件进场和交互动画
 - **布局**：Tailwind utility class 为主，全响应式
-- **个人装备材质**：全宽 forest/sand 环境背景；模块、按钮与操作面板使用 iOS 风格 Liquid Glass，并覆盖 reduced-motion、reduced-transparency 与高对比模式
+- **装备模块材质**：个人装备与装备知识共享全宽 forest/sand 环境背景和 `gear-glass-*` 材质；玻璃承载导航、控件、独立卡片、折叠组外壳和操作面板，连续介绍正文直接显示在环境背景上，折叠组内部使用实色 forest/sand 层级而不叠加玻璃
+- **辅助显示**：装备模块统一覆盖 reduced-motion、reduced-transparency 与高对比模式；模态顾问支持初始聚焦、Tab 循环、Esc 关闭和焦点恢复
 
 ---
 
-Last updated: 2026-08-10
+Last updated: 2026-08-17
