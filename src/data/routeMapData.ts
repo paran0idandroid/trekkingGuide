@@ -1,8 +1,5 @@
 import type { RouteMapConfig } from '../types';
-import { createMapTilerOutdoorStyleUrl } from '../lib/routeMapState';
-
-const mapTilerApiKey = (import.meta.env.VITE_MAPTILER_API_KEY || '').trim();
-const mapTilerOutdoorStyleUrl = mapTilerApiKey ? createMapTilerOutdoorStyleUrl(mapTilerApiKey) : '';
+import { mapTilerOutdoorStyleUrl } from './mapStyle';
 
 const routeMapConfigMap: Record<string, RouteMapConfig> = {
   wusun: {

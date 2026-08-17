@@ -13,7 +13,7 @@ export default function GearKnowledgePage() {
   const systems = getGearSystems();
 
   return (
-    <div className="min-h-screen py-20 md:py-28">
+    <main className="gear-page-environment min-h-screen py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <header className="mb-8 max-w-2xl md:mb-10">
           <div className="mb-3 inline-flex items-center gap-2 text-xs uppercase tracking-wider text-forest-500">
@@ -36,7 +36,7 @@ export default function GearKnowledgePage() {
         </section>
 
         {linkedRoute && (
-          <section className="mt-10 rounded-2xl border border-forest-100 bg-forest-50 p-5 md:mt-14 md:p-6">
+          <section className="gear-glass-module mt-10 rounded-2xl p-5 md:mt-14 md:p-6">
             <p className="text-sm font-semibold text-forest-800">{linkedRoute.name} 装备提示</p>
             <p className="mt-2 text-sm leading-6 text-forest-600">
               建议重点检查大容量背包、高帮防水徒步鞋、低温睡袋、登山杖和防风雨外层。
@@ -44,7 +44,7 @@ export default function GearKnowledgePage() {
           </section>
         )}
 
-        <section className="mt-8 flex flex-col items-start justify-between gap-5 rounded-2xl bg-sand-50 px-5 py-6 md:mt-10 md:flex-row md:items-center md:px-7">
+        <section className="gear-glass-module mt-8 flex flex-col items-start justify-between gap-5 rounded-2xl px-5 py-6 md:mt-10 md:flex-row md:items-center md:px-7">
           <div>
             <h2 className="text-lg font-semibold text-forest-800">还不确定自己需要什么？</h2>
             <p className="mt-1 text-sm leading-6 text-forest-600">
@@ -53,7 +53,7 @@ export default function GearKnowledgePage() {
           </div>
           <button
             onClick={() => setShowAdvisor(true)}
-            className="inline-flex shrink-0 items-center rounded-full bg-forest-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-forest-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-300"
+            className="gear-glass-primary gear-pressable inline-flex min-h-11 shrink-0 items-center rounded-full px-6 py-3 text-sm font-medium text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-300"
           >
             帮我判断需要什么装备
           </button>
@@ -61,6 +61,6 @@ export default function GearKnowledgePage() {
       </div>
 
       {showAdvisor && <GearAdvisorModal onClose={() => setShowAdvisor(false)} />}
-    </div>
+    </main>
   );
 }

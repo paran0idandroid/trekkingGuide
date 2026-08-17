@@ -17,8 +17,16 @@
 - 页面在 mobile / desktop 视口下是否布局正常？
 - 是否有黑背景、文字溢出、元素重叠等明显的视觉缺陷？
 - 自定义色板（forest/sand）是否一致使用？
+- 选择性 Liquid Glass 是否只用于导航、控件、独立卡片和折叠组外壳，连续正文与折叠组内部是否避免玻璃嵌套？
+- 新增玻璃场景是否继续覆盖 reduced-motion、reduced-transparency 与高对比模式？
 
-### 3. 项目规范
+### 3. 无障碍
+
+- 交互目标在移动端是否至少 44px，键盘焦点环是否清晰可见？
+- 分段标签是否保留 ARIA、方向键与 Home/End 导航？
+- 模态弹窗是否处理初始聚焦、Tab 循环、Esc 关闭、遮罩关闭及焦点恢复？
+
+### 4. 项目规范
 
 - 是否遵循"数据与视图分离"原则？
   - 路线数据：在 `src/data/routes.ts` 注册，`src/data/routeData.ts` 定义
@@ -28,24 +36,27 @@
 - 变量/函数/类型名是否使用英文？
 - UI 文案是否使用中文？
 
-### 4. 安全性 & 边界
+### 5. 安全性 & 边界
 
-- 纯前端项目，无后端侵入
+- 装备 API 是否只接受 `GET/PUT /api/gear`，并正确处理非法路径、方法和超过 1 MB 的请求？
+- SQLite 写入是否通过 validation、事务和 revision 冲突检查，避免旧页面覆盖新清单？
+- `.local-data/` 是否保持 Git 忽略，数据库文件和个人装备数据不得进入提交？
 - 是否有未使用的 import / 变量（TypeScript 的 `noUnusedLocals` 开关关闭时仍需人工检查）？
 - 图片资源引用是否指向 `public/pics/` 下的已有文件？
 
-### 5. 性能
+### 6. 性能
 
 - 不必要的 re-render（状态提升不够、props 传递过深）？
 - 大量列表是否有 key 属性？
-- 3D / 图表组件是否考虑了卸载清理（Three.js dispose、ECharts dispose）？
+- 3D / 地图组件是否考虑了卸载清理（Three.js dispose、MapLibre remove）？
 
 ## 审查流程
 
 1. **阅读 diff**：确认变更范围与用户需求匹配
 2. **检查新文件**：命名、位置、职责是否符合项目结构
 3. **运行 + 验证**：启动 dev server，在浏览器中确认视觉效果和交互
-4. **输出问题列表**：按严重程度排序（阻塞 / 重要 / 建议）
+4. **测试**：运行 `node --test scripts/*.test.mjs`；装备后端可运行 `npm run test:gear-backend`
+5. **输出问题列表**：按严重程度排序（阻塞 / 重要 / 建议）
 
 ## 严重程度定义
 
@@ -64,4 +75,4 @@
 
 ---
 
-Last updated: 2026-06-24
+Last updated: 2026-08-17

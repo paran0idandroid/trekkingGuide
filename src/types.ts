@@ -115,10 +115,6 @@ export interface GearSystem {
 }
 
 export type BudgetTier = 'entry' | 'mid' | 'premium';
-export type FitnessLevel = 'beginner' | 'intermediate' | 'experienced';
-export type GearPriority = 'lightest' | 'value' | 'durable';
-export type ArchType = 'high' | 'normal' | 'flat';
-export type SleepTemp = 'cold' | 'normal' | 'hot';
 
 export interface GearProduct {
   id: string;
@@ -133,36 +129,4 @@ export interface GearProduct {
   links: { taobao: string; jd: string };
   tags: string[];
   intro?: string;
-}
-
-export interface GearProfile {
-  totalDays: number;
-  maxAltitude: number;
-  overnightLowest: number;
-  terrain: string[];
-  waterCrossing: boolean;
-  waterSource: string;
-  resupplyPoint: boolean;
-  exposure: string[];
-}
-
-export interface UserProfile {
-  gender: 'male' | 'female';
-  height: number;
-  weight: number;
-  fitness: FitnessLevel;
-  experience: '0' | '1-3' | '3+';
-  month: number;
-  budget: BudgetTier;
-  priority: GearPriority;
-  arch: ArchType;
-  sleepTemp: SleepTemp;
-  shareTent: 'solo' | 'shared';
-  existing: string[];
-}
-
-export interface GearRecommendation {
-  product: GearProduct;
-  reason: string;
-  alternatives: GearProduct[];
 }

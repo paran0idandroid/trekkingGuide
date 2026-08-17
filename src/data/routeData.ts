@@ -72,6 +72,7 @@ export const habaWestRoute: RouteData = {
   name: '哈巴西坡',
   subtitle: '穿越双湖、黑海与连续高山垭口的三天两夜环线',
   tags: ['云南', '哈巴雪山', '高山湖泊', '3天2夜', '中高难度'],
+  heroImage: '/pics/haba/scene-1.webp',
   intro: '从咖啡营地出发，连续翻越双湖、夫妻海、黑海与鸡趾一带的高山垭口，最终返回起点。',
   overview: {
     distance: '23.3 km',

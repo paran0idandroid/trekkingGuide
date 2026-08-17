@@ -2,7 +2,7 @@
 
 ## 技术栈
 
-Vite 5 · React 18 · TypeScript 5 (strict) · Tailwind CSS 3.4 · react-router-dom v7 · GSAP 3.12 · Three.js 0.160 + @react-three/fiber + drei · ECharts 6.1 · Netlify（纯前端 SPA，无后端无数据库）
+Vite 5 · React 18 · TypeScript 5 (strict) · Tailwind CSS 3.4 · react-router-dom v7 · GSAP 3.12 · Three.js 0.160 + @react-three/fiber + drei · MapLibre GL JS 5.24 · Node.js 本地 API · SQLite。项目按本地单用户运行；`/my-gear` 的持久化依赖本机 Node 服务。
 
 ## 文件结构
 
@@ -15,7 +15,21 @@ src/
 ├── types.ts     全局共享类型
 ├── App.tsx      路由定义
 └── index.css    Tailwind 指令 + 自定义 CSS（liquid-glass 系列、动画关键帧）
+server/
+├── dev.mjs           本地页面服务与 `/api/gear` 入口
+├── gearApi.mjs       装备清单 HTTP API
+└── gearDatabase.mjs  SQLite 校验、事务与 revision 写锁
+scripts/              Node 内置测试（装备、API、数据库、路线）
+.local-data/          本机 SQLite 数据目录（Git 忽略）
 ```
+
+## 文档入口
+
+- `docs/architecture.md`：当前模块、路由、本地 API 与数据流
+- `docs/decisions.md`：架构决策及被取代的历史方案
+- `docs/code_review.md`：前端、API、SQLite 和视觉 QA 审查标准
+- `TODO.md`：已完成能力与未闭环事项
+- `docs/designs/` / `docs/plans/`：功能设计与实施记录
 
 
 ## VibeCoding 工作流（必读）
@@ -59,7 +73,7 @@ Phase 2 ── 实现计划
   │  用: writing-plans skill（/opsx:propose 视情况）
   │  读: OPEN_LOOPS.md（当前未闭环）
   │  写: 计划关联新开环项 → OPEN_LOOPS.md
-  └─ 验证: 计划保存到 docs/superpowers/plans/
+  └─ 验证: 计划保存到 docs/plans/（禁止写入 docs/superpowers/）
        │
 Phase 3 ── 编码实现
   │  用: test-driven-development skill（新逻辑）
@@ -148,7 +162,7 @@ Phase 7 ── Memory Closeout（必做）
 按修改频率排列：
 
 1. **data/ 目录**（gearKnowledge.ts · gearCatalog.ts · gearAnatomyData.ts · routes.ts · routeData.ts）— 新增内容
-2. **components/ 目录**（GearQuiz.tsx · GearAdvisorModal.tsx · GearDetailPanel.tsx）— 新功能
+2. **components/ 目录**（GearAdvisorModal.tsx · GearDetailPanel.tsx）— 新功能
 3. **pages/ 目录** — 路由集成
 4. **index.css** — 视觉打磨
 5. **tailwind.config.js** — 色板调整
@@ -165,6 +179,8 @@ Phase 7 ── Memory Closeout（必做）
 8. **Props 接口**：定义在组件文件顶部。全局共享类型放 `types.ts`。
 9. **不引入未列出的依赖**：不走 `npm install` 新增 package.json 外的库。
 10. **无测试框架**：新增纯函数逻辑推荐保持在可单元测试的层级，但暂不引入测试工具。
+11. **装备数据入口唯一**：个人装备只通过 `GET/PUT /api/gear` 读写；数据库固定在项目 `.local-data/gear.sqlite`，组件不得直接访问 SQLite。
+12. **本地服务入口**：使用 `npm run dev` 同时启动 Vite 与装备 API，固定地址为 `http://localhost:58514`；不要另起只提供 Vite 的开发命令。
 
 ## 常见遗漏
 
@@ -172,6 +188,7 @@ Phase 7 ── Memory Closeout（必做）
 - 图片引用写成了绝对路径（如 `/Users/.../pics/xxx.webp`）→ 必须 `/pics/xxx.webp`
 - 组件直接 import 了 `wusunRoute` 常量 → 必须走 `getRouteBySlug()`
 - 背景色用了 hex 值没走 Tailwind 色板 → 用 `forest-500` 替代 `#1a4d3e`
+- `/my-gear` 显示空清单：确认从包含目标数据库的项目目录执行 `npm run dev`，并检查 `.local-data/gear.sqlite`
 
 ## 禁止修改
 
@@ -180,4 +197,4 @@ Phase 7 ── Memory Closeout（必做）
 
 ---
 
-Last updated: 2026-06-26
+Last updated: 2026-08-10

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useLayoutEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRouteBySlug } from '../data/routes';
 import Hero from '../components/Hero';
@@ -7,9 +7,6 @@ import Highlights from '../components/Highlights';
 import Timeline from '../components/Timeline';
 import Risks from '../components/Risks';
 import Footer from '../components/Footer';
-import GearAdvisor from '../components/GearAdvisor';
-import FavoriteButton from '../components/FavoriteButton';
-import { useAuth } from '../contexts/AuthContext';
 import { getRouteMapConfig } from '../data/routeMapData';
 
 const RouteMapExperience = lazy(() => import('../components/RouteMapExperience'));
@@ -17,9 +14,13 @@ const RouteMapExperience = lazy(() => import('../components/RouteMapExperience')
 export default function RoutePage() {
   const { routeSlug } = useParams<{ routeSlug: string }>();
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
   const route = routeSlug ? getRouteBySlug(routeSlug) : undefined;
   const mapConfig = route ? getRouteMapConfig(route.slug) : undefined;
+
+  useLayoutEffect(() => {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [routeSlug]);
 
   if (!route) {
     return (
@@ -44,19 +45,6 @@ export default function RoutePage() {
           <RouteMapExperience route={route} config={mapConfig} />
         </Suspense>
       ) : <Hero route={route} />}
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between border-b border-forest-100">
-        <span className="text-sm text-forest-400">
-          {route.overview.distance} &middot; {route.overview.duration} &middot; {route.overview.maxElevation}
-        </span>
-        <button
-          onClick={() => !isLoggedIn && navigate('/auth')}
-          className="flex items-center gap-2 text-sm text-forest-600 hover:text-forest-800 transition-colors"
-        >
-          <FavoriteButton routeSlug={route.slug} />
-          {isLoggedIn ? '收藏路线' : '登录后收藏'}
-        </button>
-      </div>
-      <GearAdvisor routeName={route.slug} />
       <Overview route={route} />
       {route.highlights.length > 0 && <Highlights route={route} />}
       <Timeline route={route} />

@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRegionBySlug } from '../data/regions';
 import { getRoutesByRegion } from '../data/routes';
-import FavoriteButton from '../components/FavoriteButton';
 
 export default function RegionPage() {
   const { regionSlug } = useParams<{ regionSlug: string }>();
@@ -77,9 +76,6 @@ export default function RegionPage() {
                   </div>
                 </div>
               </button>
-              <div className="flex justify-end mt-2">
-                <FavoriteButton routeSlug={route.slug} />
-              </div>
             </div>
           ))}
         </div>

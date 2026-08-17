@@ -224,10 +224,3 @@ test('装备模块与所有按钮使用分层 Liquid Glass 材质', async () => 
   assert.match(styles, /prefers-reduced-transparency: reduce/);
   assert.match(styles, /prefers-contrast: more/);
 });
-
-test('认证状态从本地存储同步初始化', async () => {
-  const authContext = await readFile(new URL('src/contexts/AuthContext.tsx', root), 'utf8');
-
-  assert.match(authContext, /useState<User \| null>\(\(\) => getCurrentUser\(\)\)/);
-  assert.doesNotMatch(authContext, /setUser\(getCurrentUser\(\)\)/);
-});

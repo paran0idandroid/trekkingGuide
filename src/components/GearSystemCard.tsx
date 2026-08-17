@@ -11,7 +11,7 @@ export default function GearSystemCard({ system, routeSlug }: Props) {
     <Link
       to={`/gear-knowledge/${system.slug}`}
       state={routeSlug ? { routeSlug } : undefined}
-      className="group flex min-h-52 flex-col items-center justify-center rounded-3xl border border-transparent px-3 py-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-sand-100 hover:bg-sand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-300"
+      className="gear-glass-module gear-pressable group flex min-h-52 flex-col items-center justify-center rounded-3xl px-3 py-6 text-center hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-300"
     >
       <GearSystemIcon
         system={system.slug}

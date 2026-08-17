@@ -9,8 +9,6 @@ import type { RouteData } from '../types';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const routes = Object.values(routeDataMap).slice(0, 4);
-
 function HomeHero() {
   const heroRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -36,8 +34,9 @@ function HomeHero() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: "url(/pics/7.webp)",
+          backgroundImage: "url(/pics/haba/scene-1.webp)",
           backgroundAttachment: 'fixed',
+          backgroundPosition: 'center 58%',
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-forest-950/75 via-forest-950/55 to-forest-950/85" />
@@ -45,22 +44,21 @@ function HomeHero() {
 
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
         <div className="mb-4">
-          <span className="inline-block text-sm tracking-[0.3em] uppercase text-white/60 font-light">
+          <span className="inline-block text-[13px] tracking-[0.15em] uppercase text-white/80 font-medium">
             户外徒步路线指南
           </span>
         </div>
         <h1
           ref={titleRef}
-          className="text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-5 tracking-wide leading-tight"
+          className="text-[40px] sm:text-5xl md:text-[64px] font-bold text-white mb-5 tracking-[0.01em] leading-[1.12]"
         >
           中国徒步路线
         </h1>
         <p
           ref={subtitleRef}
-          className="text-base sm:text-lg md:text-xl text-white/60 mb-10 font-light tracking-wider max-w-2xl mx-auto leading-relaxed"
+          className="text-base md:text-lg text-white/85 mb-10 font-normal tracking-normal max-w-[34rem] mx-auto leading-relaxed text-pretty"
         >
-          探索全国经典徒步路线，获取专业装备推荐<br className="hidden sm:block" />
-          从乌孙古道到珠峰东坡，用双脚丈量中国
+          从乌孙古道到哈巴西坡，获取路线与装备建议
         </p>
         <div ref={ctaRef} className="flex flex-wrap justify-center gap-4">
           <button
@@ -171,7 +169,7 @@ export default function HomePage() {
         <div className="text-center mb-10 px-6 section-title">
           <h2 className="text-2xl md:text-3xl font-bold text-forest-800 mb-3">精选路线</h2>
           <p className="text-sm text-forest-600 max-w-xl mx-auto">
-            从新疆到西藏，每一条路线都是一段独特的旅程
+            从新疆到云南，每一条路线都是一段独特的旅程
           </p>
         </div>
         <div className="max-w-6xl mx-auto px-6">
